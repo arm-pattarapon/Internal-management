@@ -2,14 +2,17 @@
 "use client"
 import { LuChartPie, LuCircleUserRound, LuLayers3, LuFileClock, LuCog, LuLogOut, LuBell, LuDot, LuChevronDown } from "react-icons/lu";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
+import { DotLoader } from "react-spinners";
 export default function DashboardLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
 
+    const [isPending, startTransition] = useTransition();
     const pathname = usePathname();
     console.log(pathname);
 
@@ -61,6 +64,7 @@ export default function DashboardLayout({
                             <div className="flex flex-col space-y-1.5 mt-5">
                                 {navigation.map(item => (
                                     <Link href={item.href} key={item.name}
+                                        onClick={() => startTransition(() => { })}
                                         className={classNames(item.curent ? 'bg-blue-500 text-white shadow-sm shadow-blue-500' :
                                             'text-sm text-gray-400 hover:bg-blue-300 hover:text-white',
                                             'p-2 rounded-lg flex cursor-pointer items-center')}>{<item.icon className="me-1" />}{item.name}</Link>
@@ -116,8 +120,14 @@ export default function DashboardLayout({
                             </div>
 
                         </div>
-                        <div className="row-span-9 flex justify-center items-centers">
-                            <div className=" m-5 w-full">
+                        <div className="row-span-9 flex justify-center items-centers relative">
+                            <div className="m-5 w-full h-full">
+                                {isPending && (
+                                    <div className="absolute inset-0 flex justify-center items-center">
+                                        <DotLoader size={30} color="#2b7fff" />
+                                    </div>
+                                )}
+
                                 {children}
                             </div>
                         </div>
