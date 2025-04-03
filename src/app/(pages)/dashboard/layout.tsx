@@ -6,6 +6,7 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { DotLoader } from "react-spinners";
+
 export default function DashboardLayout({
     children,
 }: Readonly<{
@@ -25,7 +26,7 @@ export default function DashboardLayout({
     ]
 
     const Notification = [
-        { title: 'New Message', content: 'You have a new message from John.', read: false, href: '#' },
+        { title: 'New Message', content: 'Nulla facilisi. Pellentesque consectetur eu risus sed scelerisque. Suspendisse suscipit iaculis mi eget viverra. Interdum et malesuada fames ac ante ipsum primis in faucibus. Phasellus quis sem odio. Aliquam ut erat enim. In iaculis diam vitae justo rhoncus vehicula. Sed ullamcorper arcu non ante laoreet, sit amet scelerisque lectus luctus. Integer sagittis neque sit amet bibendum maximus.', read: false, href: '#' },
         { title: 'System Update', content: 'System update will occur at midnight.', read: true, href: '#' },
         { title: 'Meeting Reminder', content: 'Don’t forget the team meeting at 3 PM.', read: false, href: '#' },
         { title: 'Task Assigned', content: 'You have been assigned a new task.', read: true, href: '#' },
@@ -50,6 +51,7 @@ export default function DashboardLayout({
     function classNames(...classes: string[]) {
         return classes.filter(Boolean).join(' ')
     }
+
     return (
         <div className="h-screen flex justify-center items-center">
             <div className="grid grid-cols-5 gap-0.5 w-full h-full">
@@ -102,7 +104,7 @@ export default function DashboardLayout({
                                                         {item.read && <LuDot className="text-red-500 absolute text-[30px] origin-top-right top-[-5px] right-0" />}
 
                                                         <p>{item.title}</p>
-                                                        <p>{item.content}</p>
+                                                        <p className="line-clamp-3">{item.content}</p>
                                                     </MenuItem>
                                                 ))}
                                             </MenuItems>
