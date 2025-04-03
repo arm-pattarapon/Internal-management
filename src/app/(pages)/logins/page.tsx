@@ -15,7 +15,7 @@ export default function loginPage() {
   const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data)
   return (
     <div className='h-screen flex justify-center items-center'>
-      <div className="max-w-lg rounded overflow-hidden shadow-none md:shadow-lg p-4 w-full">
+      <div className="bg-white max-w-lg rounded overflow-hidden shadow-none md:shadow-lg p-4 w-full">
         <div className='flex justify-center'>
           <img className="w-[140px]" src="/Ignite_logo_crop.png" alt="Ignite Logo" />
         </div>
