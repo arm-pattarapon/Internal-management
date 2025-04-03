@@ -1,5 +1,5 @@
 "use client"
-export default function dashboardPage(){
+export default function dashboardPage() {
 
 
     return (
