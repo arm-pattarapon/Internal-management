@@ -121,13 +121,12 @@ export default function DashboardLayout({
 
                         </div>
                         <div className="row-span-9 flex justify-center items-centers relative">
-                            <div className="m-5 w-full h-full">
+                            <div className="m-5 w-full h-auto">
                                 {isPending && (
                                     <div className="absolute inset-0 flex justify-center items-center">
                                         <DotLoader size={30} color="#2b7fff" />
                                     </div>
                                 )}
-
                                 {children}
                             </div>
                         </div>
