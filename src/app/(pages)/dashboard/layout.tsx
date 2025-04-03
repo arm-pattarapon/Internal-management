@@ -78,8 +78,8 @@ export default function DashboardLayout({
                     </div>
                 </div>
                 <div className="col-span-4">
-                    <div className="grid grid-rows-10 w-full h-full">
-                        <div className="bg-white row-span-1 flex justify-between items-center px-5">
+                    <div className="flex flex-col w-full h-full">
+                        <div className="bg-white flex justify-between items-center h-15 px-5">
                             <div className="flex text-2xl">
                                 Dashboard
                             </div>
@@ -120,7 +120,7 @@ export default function DashboardLayout({
                             </div>
 
                         </div>
-                        <div className="row-span-9 flex justify-center items-centers relative">
+                        <div className="flex w-full h-full justify-center items-centers relative">
                             <div className="m-5 w-full h-auto">
                                 {isPending && (
                                     <div className="absolute inset-0 flex justify-center items-center">
