@@ -2,10 +2,12 @@
 "use client"
 import { LuChartPie, LuCircleUserRound, LuLayers3, LuFileClock, LuCog, LuLogOut, LuBell, LuDot, LuChevronDown } from "react-icons/lu";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { useTransition } from "react";
+import { useTransition,useState } from "react";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { DotLoader } from "react-spinners";
+import Cookies from "js-cookie";
+
 
 export default function DashboardLayout({
     children,
@@ -16,6 +18,8 @@ export default function DashboardLayout({
     const [isPending, startTransition] = useTransition();
     const pathname = usePathname();
     console.log(pathname);
+
+    
 
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LuChartPie, curent: pathname === '/dashboard' },
@@ -116,7 +120,7 @@ export default function DashboardLayout({
                                     <img src="/default_user_logo.png" className="w-full h-full object-cover" alt="user" />
                                 </div>
                                 <div className="flex flex-col cursor-pointer">
-                                    <div className="text-sm text-gray-600 font-semibold flex items-center">Username <LuChevronDown className="text-blue-500 ms-5" /></div>
+                                    <div className="text-sm text-gray-600 font-semibold flex items-center">{'username'} <LuChevronDown className="text-blue-500 ms-5" /></div>
                                     <div className="text-sm text-gray-400">Role</div>
                                 </div>
                             </div>
