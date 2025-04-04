@@ -17,10 +17,10 @@ export default function loginPage() {
     <div className='h-screen flex justify-center items-center'>
       <div className="bg-white max-w-lg rounded overflow-hidden shadow-none md:shadow-lg p-4 w-full">
         <div className='flex justify-center'>
-          <img className="w-[140px]" src="/Ignite_logo_crop.png" alt="Ignite Logo" />
+          <img className="w-[140px] mt-[20px]" src="/Ignite_logo_crop.png" alt="Ignite Logo" />
         </div>
         <div className="px-6 py-4">
-          <div className="text-[24px] text-center mt-[31px] mb-[31px]">Ignite Idea</div>
+          <div className="text-[24px] text-center mt-[10px] mb-[31px]">Ignite Idea</div>
           <div className="w-full max-w-lg">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className=" mb-[31px]">
