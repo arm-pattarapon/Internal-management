@@ -1,9 +1,9 @@
-import Image from "next/image";
-
+// import { redirect } from "next/navigation";
+import LoginPage from "./(pages)/logins/page";
 export default function Home() {
-  return (
+  return(
     <div>
-      test
+      <LoginPage />
     </div>
-  );
+  )
 }
