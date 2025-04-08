@@ -1,19 +1,15 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 
 type Inputs = {
-  email: string;
-  password: string;
+    newPassword: string;
+    confirmPassword: string;
 };
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const {
     register,
@@ -24,37 +20,32 @@ export default function LoginPage() {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
       console.log("Submitting:", data);
+      const token = window.location.pathname.split("/").pop();
+      console.log("Slug:", token);
+      const { newPassword, confirmPassword } = data;
+      if (newPassword !== confirmPassword) {
+        console.error("Passwords do not match");
+      }else{
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify({ password: newPassword,token: token }),
+          }
+        );
 
-      // Use Axios for Login API Request
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        data,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      console.log("Login response:", res.data);
-
-      // Set Cookies
-      Cookies.set("accessToken", res.data.accessToken, { expires: 1 });
-      Cookies.set("email", data.email, { expires: 1 });
-
-      // Fetch user profile
-      const profileRes = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/user/profile`,
-        { email: data.email },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${res.data.accessToken}`,
-          },
+        if (!res.ok) {
+          console.log("Error in response:", res);
+        } else {
+          console.log("Password reset successful");
+          router.push("/");
         }
-      );
+      }
 
-      console.log("Profile response:", profileRes.data);
-      Cookies.set("username", profileRes.data.name, { expires: 1 });
 
-      // Redirect to Dashboard
-      router.push("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
     }
@@ -78,43 +69,33 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-[31px]">
                 <label className="block text-black text-[12px] mb-2">
-                  Email address
+                  New Password
                 </label>
                 <input
-                  {...register("email", { required: true })}
+                  {...register("newPassword", { required: true })}
                   className="shadow appearance-none border border-gray-100 rounded w-full py-2 px-3 text-black leading-tight outline-none focus:shadow-outline"
-                  id="email"
-                  type="text"
+                  id="newPassword"
+                  type="password"
                 />
               </div>
               <div className="mb-[31px]">
                 <label className="block text-black text-[12px] mb-2">
-                  Password
+                  Confirm Password
                 </label>
                 <input
-                  {...register("password", { required: true })}
+                  {...register("confirmPassword", { required: true })}
                   className="shadow appearance-none border border-gray-100 rounded w-full py-2 px-3 text-black leading-tight outline-none focus:shadow-outline"
-                  id="password"
+                  id="confirmPassword"
                   type="password"
                 />
               </div>
-              <div className="flex justify-between">
-                <div className="flex items-center">
-                  <input type="checkbox" />
-                  <label className="px-2 text-[12px]">Remember me</label>
-                </div>
-                <div>
-                  <a href="./logins/forgot_password" className="text-[10px] text-blue-400">
-                    Forgot Password?
-                  </a>
-                </div>
-              </div>
+
               <div className="flex justify-center mb-[31px] mt-4">
                 <button
                   className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded cursor-pointer w-full text-[24px]"
                   type="submit"
                 >
-                  Sign in
+                  Submit
                 </button>
               </div>
             </form>
