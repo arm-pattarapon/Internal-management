@@ -15,7 +15,7 @@ import {
   LuChevronDown,
 } from "react-icons/lu";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { DotLoader } from "react-spinners";
@@ -26,19 +26,27 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const accessToken = Cookies.get("accessToken");
-  const router = useRouter();
+    const router = useRouter();
+    const pathname = usePathname();
 
-  if (accessToken === undefined || accessToken === "" || accessToken === null) {
-    router.push("/");
-  } else {
+    const [username, setUsername] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    useEffect(()=>{
+        const accessToken = Cookies.get("accessToken");
+        if (!accessToken) {
+          router.push("/"); 
+        }else{
+            setUsername(Cookies.get("username") || '');
+            setEmail(Cookies.get("email") || '');
+        }
+    },[pathname])
+
+ 
     const [isPending, startTransition] = useTransition();
 
-    const username = Cookies.get("username");
-    const email = Cookies.get("email");
 
-    const pathname = usePathname();
-    console.log(pathname);
+
+
     const navigation = [
       {
         name: "Dashboard",
@@ -205,7 +213,7 @@ export default function DashboardLayout({
                   </div>
                   <div className="flex flex-col cursor-pointer">
                     <div className="text-sm text-gray-600 font-semibold flex items-center">
-                      {username}{" "}
+                      {username}
                       <LuChevronDown className="text-blue-500 ms-5" />
                     </div>
                     <div className="text-sm text-gray-400">Role</div>
@@ -227,5 +235,5 @@ export default function DashboardLayout({
         </div>
       </div>
     );
-  }
+  
 }

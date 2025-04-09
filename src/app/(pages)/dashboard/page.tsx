@@ -3,17 +3,18 @@
 
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 
 export default function dashboardPage() {
-  const username = Cookies.get("username");
-  const email = Cookies.get("email");
+    const [username, setUsername] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
 
-  const accessToken = Cookies.get("accessToken");
-  const router = useRouter();
 
-  if (accessToken === undefined || accessToken === "" || accessToken === null) {
-    router.push("/");
-  } else {
+    useEffect(()=>{
+      setUsername(Cookies.get("username") || '');
+      setEmail(Cookies.get("email") || '');
+    })
+
     return (
       <div>
         <div className="text-[24px] text-center mt-[10px] mb-[31px]">
@@ -23,5 +24,5 @@ export default function dashboardPage() {
         <div className="text-center text-[12px]">This is your dashboard</div>
       </div>
     );
-  }
+  
 }
