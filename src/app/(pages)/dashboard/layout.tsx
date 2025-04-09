@@ -176,7 +176,7 @@ export default function DashboardLayout({
                         </MenuButton>
                         <MenuItems
                           aria-labelledby="notiAction"
-                          className="flex flex-col space-y-1 bg-white absolute origin-top-right mt-1 border border-gray-100 right-0 w-[300px] min-h-[500px] max-h-[500px] overflow-y-scroll rounded-lg shadow-lg focus:outline-none"
+                          className="flex flex-col space-y-1 z-100 bg-white absolute origin-top-right mt-1 border border-gray-100 right-0 w-[300px] min-h-[500px] max-h-[500px] overflow-y-scroll rounded-lg shadow-lg focus:outline-none"
                         >
                           <div className="mt-2">
                             <p className="ps-1">Notification</p>
