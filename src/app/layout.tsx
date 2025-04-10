@@ -23,7 +23,7 @@ export default function RootLayout({
       <body
         className={`${alata.className} antialiased`}
       >
-        {children}
+          {children}
       </body>
     </html>
   );
