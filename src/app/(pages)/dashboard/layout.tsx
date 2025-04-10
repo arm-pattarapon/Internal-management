@@ -15,7 +15,7 @@ import {
   LuChevronDown,
 } from "react-icons/lu";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { DotLoader } from "react-spinners";
@@ -26,19 +26,28 @@ export default function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const accessToken = Cookies.get("accessToken");
-  const router = useRouter();
+    const router = useRouter();
+    const pathname = usePathname();
 
-  if (accessToken === undefined || accessToken === "" || accessToken === null) {
-    router.push("/");
-  } else {
+    const [username, setUsername] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    useEffect(()=>{
+        const accessToken = Cookies.get("accessToken");
+        if (!accessToken) {
+          router.push("/"); 
+        }else{
+            setUsername(Cookies.get("username") || '');
+            setEmail(Cookies.get("email") || '');
+            console.log('test useeffect');
+            
+        }
+    },[pathname]) 
+ 
     const [isPending, startTransition] = useTransition();
 
-    const username = Cookies.get("username");
-    const email = Cookies.get("email");
 
-    const pathname = usePathname();
-    console.log(pathname);
+
+
     const navigation = [
       {
         name: "Dashboard",
@@ -168,7 +177,7 @@ export default function DashboardLayout({
                         </MenuButton>
                         <MenuItems
                           aria-labelledby="notiAction"
-                          className="flex flex-col space-y-1 bg-white absolute origin-top-right mt-1 border border-gray-100 right-0 w-[300px] min-h-[500px] max-h-[500px] overflow-y-scroll rounded-lg shadow-lg focus:outline-none"
+                          className="flex flex-col space-y-1 z-100 bg-white absolute origin-top-right mt-1 border border-gray-100 right-0 w-[300px] min-h-[500px] max-h-[500px] overflow-y-scroll rounded-lg shadow-lg focus:outline-none"
                         >
                           <div className="mt-2">
                             <p className="ps-1">Notification</p>
@@ -205,7 +214,7 @@ export default function DashboardLayout({
                   </div>
                   <div className="flex flex-col cursor-pointer">
                     <div className="text-sm text-gray-600 font-semibold flex items-center">
-                      {username}{" "}
+                      {username}
                       <LuChevronDown className="text-blue-500 ms-5" />
                     </div>
                     <div className="text-sm text-gray-400">Role</div>
@@ -227,5 +236,5 @@ export default function DashboardLayout({
         </div>
       </div>
     );
-  }
+  
 }
