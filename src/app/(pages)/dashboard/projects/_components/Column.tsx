@@ -1,23 +1,39 @@
 "use client"
 
+import { SortableContext } from "@dnd-kit/sortable";
+import { Id, Project } from "../type";
 import Card from "./Card";
+import { useMemo } from "react";
 
-export default function Column({ id, title, items }: any) {
+interface Column {
+    id: number;
+    title: string;
+    deleteProject: (id: Id) => void;
+    projects: Project[];
+}
+
+export default function Column({projects, deleteProject, ...column}: Column) {
+    const projectIds = useMemo(() => {
+        return projects.map(project=> project.id)
+    },[projects])
+
     return (
-        <div key={id} className="relative bg-white rounded-sm shadow-lg p-3 pt-15 w-full flex flex-col space-y-3">
-            <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm absolute top-0 left-0 px-2 flex items-center justify-between">
-                <div className="text-md text-left ">{title}</div>
+        <div key={column.id} className="bg-white rounded-sm shadow-lg w-full flex flex-col border-1 border-gray-300">
+            <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm px-2 flex items-center justify-between">
+                <div className="text-md text-left select-none">{column.title}</div>
                 <div className="text-[12px] cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                     </svg>
                 </div>
             </div>
-            <div className="flex space-y-3 flex-col w-full ">
+            <div className="flex flex-col flex-grow space-y-3 p-3 overflow-y-auto max-h-100">
                 {/* Card */}
-                {items.map((item: any) => (
-                    <Card key={item.id} id={item.id} title={item.title} />
-                ))}
+                <SortableContext items={projectIds}>
+                    {projects.map((project: any) => (
+                        <Card key={project.id} project={project} deleteProject={deleteProject} />
+                    ))}
+                </SortableContext>
             </div>
         </div>
     )

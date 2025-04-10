@@ -38,9 +38,10 @@ export default function DashboardLayout({
         }else{
             setUsername(Cookies.get("username") || '');
             setEmail(Cookies.get("email") || '');
+            console.log('test useeffect');
+            
         }
-    },[pathname])
-
+    },[pathname]) 
  
     const [isPending, startTransition] = useTransition();
 
