@@ -1,11 +1,11 @@
 "use client"
 
-import { act, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Column from "./_components/Column";
 import { Id, Project } from "./type"
 
 interface Column {
-    id: number;
+    id: string;
     title: string;
 }
 
@@ -41,6 +41,7 @@ export default function projectsPage() {
 
     function onDragEnd(event: DragEndEvent){
         const {active, over} = event;
+        console.log('project after move: ',projects);
         if(!over) return;
 
         const activeId = active.id;
@@ -54,14 +55,12 @@ export default function projectsPage() {
 
             return arrayMove(projects,activeIndex,overIndex);
         })
-
-        console.log('project after move: ',projects);
-        
     }
 
     function onDragOver(event: DragOverEvent) {
         const {active, over} = event;
         if(!over) return;
+        console.log('drag over: ',over, 'active: ', active);
 
         const activeId = active.id;
         const overId = over.id;
@@ -72,43 +71,81 @@ export default function projectsPage() {
         const isOver = over.data.current?.type === 'Project';
 
         if(!isActive) return;
-
-        if (isActive && isOver) {
+        
+        if (!(isActive && isOver)) {
+            const activeProjectColumnId = active.data.current?.project.columnId;
+            const overColumnId = over.data.current?.column.id;
+       
             setProjects((projects) => {
-            const activeIndex = projects.findIndex((project) => project.id === activeId);
-            const overIndex = projects.findIndex((project) => project.id === overId);
+                if(activeProjectColumnId === overColumnId) return projects;
+                const activeProject = projects.find((project) => project.id === activeId);
+                const newProject = projects.map((project) => {
+                    if(project.id === activeProject?.id){
+                        return {
+                            ...project,
+                            columnId: overColumnId,
+                        }
+                    }
+                    return project;
+                })
+                
+                return newProject
+            })
 
-            if (projects[activeIndex].columnId === projects[overIndex].columnId) {
-                console.log('Move to same column: ', projects[overIndex].columnId);
-                return projects;
-            }
+        }else{
+            const activeProjectColumnId = active.data.current?.project.columnId;
+            const overProjectColumnId = over.data.current?.project.columnId;
+            if(activeProjectColumnId === overProjectColumnId) return;
+            setProjects((projects) => {
+                const activeProject = projects.find((project) => project.id === activeId);
+                const newProject = projects.map((project) => {
+                    if(project.id === activeProject?.id){
+                        return {
+                            ...project,
+                            columnId: overProjectColumnId,
+                        }
+                    }
+                    return project;
+                })
+                
+                return newProject
+            })
 
-            projects[activeIndex].columnId = projects[overIndex].columnId;
-            console.log('Move to different column: ', projects[overIndex].columnId);
-
-            return arrayMove(projects, activeIndex, overIndex);
-            });
         }
+            // setProjects((projects) => {
+            // const activeIndex = projects.findIndex((project) => project.id === activeId);
+            // const overIndex = projects.findIndex((project) => project.id === overId);
+
+            // if (projects[activeIndex].columnId === projects[overIndex].columnId) {
+            //     console.log('Move to same column: ', projects[overIndex].columnId);
+            //     return projects;
+            // }
+
+            // projects[activeIndex].columnId = projects[overIndex].columnId;
+            // console.log('Move to different column: ', projects[overIndex].columnId);
+
+            // return arrayMove(projects, activeIndex, overIndex);
+            // });
     }
 
 
 
     useEffect(() => {
         setColumns([
-            { id: 1, title: "Backlog" },
-            { id: 2, title: "In Progress" },
-            { id: 3, title: "Completed" },
+            { id: `columnId-1`, title: "Backlog" },
+            { id: `columnId-2`, title: "In Progress" },
+            { id: `columnId-3`, title: "Completed" },
         ])
 
         setProjects([
-            { id: 1, columnId: 1, title: "Project Alpha", description: "Initial project setup", createdAt: new Date("2023-01-01"), updatedAt: new Date("2023-01-02") },
-            { id: 2, columnId: 1, title: "Project Beta", description: "Research and development", createdAt: new Date("2023-02-01"), updatedAt: new Date("2023-02-05") },
-            { id: 5, columnId: 1, title: "Project Epsilon", description: "Requirement gathering", createdAt: new Date("2023-05-01"), updatedAt: new Date("2023-05-03") },
-            { id: 6, columnId: 1, title: "Project Zeta", description: "UI/UX design", createdAt: new Date("2023-06-01"), updatedAt: new Date("2023-06-05") },
-            { id: 3, columnId: 2, title: "Project Gamma", description: "Implementation phase", createdAt: new Date("2023-03-01"), updatedAt: new Date("2023-03-10") },
-            { id: 4, columnId: 3, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
-            { id: 7, columnId: 2, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
-            { id: 8, columnId: 2, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
+            { id: 1, columnId: `columnId-1`, title: "Project Alpha", description: "Initial project setup", createdAt: new Date("2023-01-01"), updatedAt: new Date("2023-01-02") },
+            { id: 2, columnId: `columnId-1`, title: "Project Beta", description: "Research and development", createdAt: new Date("2023-02-01"), updatedAt: new Date("2023-02-05") },
+            { id: 5, columnId: `columnId-1`, title: "Project Epsilon", description: "Requirement gathering", createdAt: new Date("2023-05-01"), updatedAt: new Date("2023-05-03") },
+            // { id: 6, columnId: 1, title: "Project Zeta", description: "UI/UX design", createdAt: new Date("2023-06-01"), updatedAt: new Date("2023-06-05") },
+            // { id: 3, columnId: 2, title: "Project Gamma", description: "Implementation phase", createdAt: new Date("2023-03-01"), updatedAt: new Date("2023-03-10") },
+            // { id: 4, columnId: 3, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
+            // { id: 7, columnId: 2, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
+            // { id: 8, columnId: 2, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
         ])
         
     }, [])
