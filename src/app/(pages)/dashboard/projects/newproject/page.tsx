@@ -78,9 +78,42 @@ export default function NewProjectsPage() {
                     </SelectContent>
                 </Select>
                 </div>
-                <div className="text-sm text-muted-foreground">PM <em>Mr. Blacksnow</em></div>
-                <div className="text-sm text-muted-foreground">BA <em>Mr. Whitesnow</em></div>
-                <div className="text-sm text-muted-foreground">DEV <em>Mr. Greensnow</em></div>
+                <div className="text-sm text-muted-foreground">PM 
+                    <Select>
+                        <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select PM" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="black">Mr. Blacksnow</SelectItem>
+                        <SelectItem value="white">Mr. Whitesnow</SelectItem>
+                        <SelectItem value="green">Mr. Greensnow</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="text-sm text-muted-foreground">BA 
+                    <Select>
+                        <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select BA" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="black">Mr. Blacksnow</SelectItem>
+                        <SelectItem value="white">Mr. Whitesnow</SelectItem>
+                        <SelectItem value="green">Mr. Greensnow</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="text-sm text-muted-foreground">DEV 
+                    <Select>
+                        <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select DEV" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="black">Mr. Blacksnow</SelectItem>
+                        <SelectItem value="white">Mr. Whitesnow</SelectItem>
+                        <SelectItem value="green">Mr. Greensnow</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </CardContent>
             </Card>
         </div>
