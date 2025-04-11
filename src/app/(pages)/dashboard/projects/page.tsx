@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Column from "./_components/Column";
 import { Id, Project } from "./type"
+import Link from "next/link";
 
 interface Column {
     id: string;
@@ -112,21 +113,8 @@ export default function projectsPage() {
             })
 
         }
-            // setProjects((projects) => {
-            // const activeIndex = projects.findIndex((project) => project.id === activeId);
-            // const overIndex = projects.findIndex((project) => project.id === overId);
-
-            // if (projects[activeIndex].columnId === projects[overIndex].columnId) {
-            //     console.log('Move to same column: ', projects[overIndex].columnId);
-            //     return projects;
-            // }
-
-            // projects[activeIndex].columnId = projects[overIndex].columnId;
-            // console.log('Move to different column: ', projects[overIndex].columnId);
-
-            // return arrayMove(projects, activeIndex, overIndex);
-            // });
     }
+
 
 
 
@@ -141,11 +129,6 @@ export default function projectsPage() {
             { id: 1, columnId: `columnId-1`, title: "Project Alpha", description: "Initial project setup", createdAt: new Date("2023-01-01"), updatedAt: new Date("2023-01-02") },
             { id: 2, columnId: `columnId-1`, title: "Project Beta", description: "Research and development", createdAt: new Date("2023-02-01"), updatedAt: new Date("2023-02-05") },
             { id: 5, columnId: `columnId-1`, title: "Project Epsilon", description: "Requirement gathering", createdAt: new Date("2023-05-01"), updatedAt: new Date("2023-05-03") },
-            // { id: 6, columnId: 1, title: "Project Zeta", description: "UI/UX design", createdAt: new Date("2023-06-01"), updatedAt: new Date("2023-06-05") },
-            // { id: 3, columnId: 2, title: "Project Gamma", description: "Implementation phase", createdAt: new Date("2023-03-01"), updatedAt: new Date("2023-03-10") },
-            // { id: 4, columnId: 3, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
-            // { id: 7, columnId: 2, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
-            // { id: 8, columnId: 2, title: "Project Delta", description: "Final review and deployment", createdAt: new Date("2023-04-01"), updatedAt: new Date("2023-04-15") },
         ])
         
     }, [])
@@ -188,9 +171,9 @@ export default function projectsPage() {
                                 </div>
 
                                 <div className="relative">
-                                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded">
+                                    <Link href="./projects/newproject" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded">
                                         + Project
-                                    </button>
+                                    </Link>
                                 </div>
 
                             </div>
