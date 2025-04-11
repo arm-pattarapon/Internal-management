@@ -17,18 +17,13 @@ export default function dashboardPage() {
     setUsername(Cookies.get("username") || '');
     setEmail(Cookies.get("email") || '');
   })
-
-  if (accessToken === undefined || accessToken === "" || accessToken === null) {
-    router.push("/");
-  } else {
-    return (
-      <div>
-        <div className="text-[24px] text-center mt-[10px] mb-[31px]">
-          Welcome {username} ({email})
-        </div>
-        <div className="text-[24px] text-center mt-[10px] mb-[31px]">{""}</div>
-        <div className="text-center text-[12px]">This is your dashboard</div>
+  return (
+    <div>
+      <div className="text-[24px] text-center mt-[10px] mb-[31px]">
+        Welcome {username} ({email})
       </div>
-    );
-  }
+      <div className="text-[24px] text-center mt-[10px] mb-[31px]">{""}</div>
+      <div className="text-center text-[12px]">This is your dashboard</div>
+    </div>
+  );
 }
