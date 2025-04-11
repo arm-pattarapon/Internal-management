@@ -1,8 +1,10 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
+import Spinner from "@/app/component/spiner";
 
 type Inputs = {
     newPassword: string;
@@ -11,6 +13,9 @@ type Inputs = {
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+
+  const [isLoading, setIsloading] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -19,13 +24,17 @@ export default function ResetPasswordPage() {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     try {
-      console.log("Submitting:", data);
       const token = window.location.pathname.split("/").pop();
-      console.log("Slug:", token);
       const { newPassword, confirmPassword } = data;
       if (newPassword !== confirmPassword) {
-        console.error("Passwords do not match");
+        toast(`Passwords is not match.`, {
+          style: {
+            border: '1px solid black',
+            background:'#d75346'
+          },
+        });
       }else{
+        setIsloading(true);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`,
           {
@@ -36,13 +45,25 @@ export default function ResetPasswordPage() {
             body: JSON.stringify({ password: newPassword,token: token }),
           }
         );
+        const result = await res.json();
 
         if (!res.ok) {
-          console.log("Error in response:", res);
+          toast(`${result?.message}`, {
+            style: {
+              border: '1px solid black',
+              background:'#d75346'
+            },
+          });
         } else {
-          console.log("Password reset successful");
+          toast(`${result?.message}`, {
+            style: {
+              border: '1px solid black',
+              background:'#43934b'
+            },
+          });
           router.push("/");
         }
+        setIsloading(false);
       }
 
 
@@ -53,55 +74,60 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="h-screen flex justify-center items-center">
-      <div className="bg-white max-w-lg rounded overflow-hidden shadow-none md:shadow-lg p-4 w-full">
-        <div className="flex justify-center">
-          <img
-            className="w-[140px] mt-[20px]"
-            src="/Ignite_logo_crop.png"
-            alt="Ignite Logo"
-          />
-        </div>
-        <div className="px-6 py-4">
-          <div className="text-[24px] text-center mt-[10px] mb-[31px]">
-            Ignite Idea
+      <Toaster position="top-center" />
+      {isLoading ? (
+        <Spinner/>
+      ):(
+        <div className="bg-white max-w-lg rounded overflow-hidden shadow-none md:shadow-lg p-4 w-full">
+          <div className="flex justify-center">
+            <img
+              className="w-[140px] mt-[20px]"
+              src="/Ignite_logo_crop.png"
+              alt="Ignite Logo"
+            />
           </div>
-          <div className="w-full max-w-lg">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-[31px]">
-                <label className="block text-black text-[12px] mb-2">
-                  New Password
-                </label>
-                <input
-                  {...register("newPassword", { required: true })}
-                  className="shadow appearance-none border border-gray-100 rounded w-full py-2 px-3 text-black leading-tight outline-none focus:shadow-outline"
-                  id="newPassword"
-                  type="password"
-                />
-              </div>
-              <div className="mb-[31px]">
-                <label className="block text-black text-[12px] mb-2">
-                  Confirm Password
-                </label>
-                <input
-                  {...register("confirmPassword", { required: true })}
-                  className="shadow appearance-none border border-gray-100 rounded w-full py-2 px-3 text-black leading-tight outline-none focus:shadow-outline"
-                  id="confirmPassword"
-                  type="password"
-                />
-              </div>
+          <div className="px-6 py-4">
+            <div className="text-[24px] text-center mt-[10px] mb-[31px]">
+              Ignite Idea
+            </div>
+            <div className="w-full max-w-lg">
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="mb-[31px]">
+                  <label className="block text-black text-[12px] mb-2">
+                    New Password
+                  </label>
+                  <input
+                    {...register("newPassword", { required: true })}
+                    className="shadow appearance-none border border-gray-100 rounded w-full py-2 px-3 text-black leading-tight outline-none focus:shadow-outline"
+                    id="newPassword"
+                    type="password"
+                  />
+                </div>
+                <div className="mb-[31px]">
+                  <label className="block text-black text-[12px] mb-2">
+                    Confirm Password
+                  </label>
+                  <input
+                    {...register("confirmPassword", { required: true })}
+                    className="shadow appearance-none border border-gray-100 rounded w-full py-2 px-3 text-black leading-tight outline-none focus:shadow-outline"
+                    id="confirmPassword"
+                    type="password"
+                  />
+                </div>
 
-              <div className="flex justify-center mb-[31px] mt-4">
-                <button
-                  className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded cursor-pointer w-full text-[24px]"
-                  type="submit"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-center mb-[31px] mt-4">
+                  <button
+                    className="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded cursor-pointer w-full text-[24px]"
+                    type="submit"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,9 @@
+import { DotLoader } from "react-spinners";
+
 export default function Spinner() {
     return (
-        <div className="flex h-screen items-center justify-center bg-white ">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent">
-            </div>     
+        <div className="absolute inset-0 flex justify-center items-center">
+            <DotLoader size={30} color="#2b7fff" />
         </div>
     );
 }
