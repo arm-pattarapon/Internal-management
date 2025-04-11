@@ -29,9 +29,9 @@ export default function DashboardLayout({
   const accessToken = Cookies.get("accessToken");
   const router = useRouter();
 
-  if (accessToken === undefined || accessToken === "" || accessToken === null) {
-    router.push("/");
-  } else {
+  // if (accessToken === undefined || accessToken === "" || accessToken === null) {
+  //   router.push("/");
+  // } else {
     const [isPending, startTransition] = useTransition();
 
     const username = Cookies.get("username");
@@ -228,4 +228,4 @@ export default function DashboardLayout({
       </div>
     );
   }
-}
+// }

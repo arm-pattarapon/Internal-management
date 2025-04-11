@@ -11,9 +11,9 @@ export default function dashboardPage() {
   const accessToken = Cookies.get("accessToken");
   const router = useRouter();
 
-  if (accessToken === undefined || accessToken === "" || accessToken === null) {
-    router.push("/");
-  } else {
+  // if (accessToken === undefined || accessToken === "" || accessToken === null) {
+  //   router.push("/");
+  // } else {
     return (
       <div>
         <div className="text-[24px] text-center mt-[10px] mb-[31px]">
@@ -23,5 +23,5 @@ export default function dashboardPage() {
         <div className="text-center text-[12px]">This is your dashboard</div>
       </div>
     );
-  }
+  // }
 }
