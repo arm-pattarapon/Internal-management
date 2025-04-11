@@ -169,12 +169,9 @@ export default function projectsPage() {
                                         <input type="date" id="datepick" className="block w-full py-2 px-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-[#F0F6FF] focus:ring-blue-500 focus:border-blue-500 " />
                                     </div>
                                 </div>
-
-                                <div className="relative">
-                                    <Link href="./projects/newproject" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded">
-                                        + Project
-                                    </Link>
-                                </div>
+                                <Link href="./projects/newproject" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded">
+                                    + Project
+                                </Link>                             
 
                             </div>
 
