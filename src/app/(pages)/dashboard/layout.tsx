@@ -154,7 +154,7 @@ export default function DashboardLayout({
             </div>
           </div>
           <div className="col-span-4">
-            <div className="flex flex-col w-full h-full">
+            <div className="flex bg-[#ededed] flex-col w-full h-full">
               <div className="bg-white flex justify-between items-center h-15 px-5">
                 <div className="flex text-2xl">Dashboard</div>
                 <div className="flex items-center space-x-2">
