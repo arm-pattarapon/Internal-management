@@ -18,8 +18,8 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { DotLoader } from "react-spinners";
 import Cookies from "js-cookie";
+import Spinner from "@/app/component/spiner";
 
 export default function DashboardLayout({
   children,
@@ -224,9 +224,7 @@ export default function DashboardLayout({
               <div className="flex w-full h-full justify-center items-centers relative">
                 <div className="m-5 w-full h-auto">
                   {isPending && (
-                    <div className="absolute inset-0 flex justify-center items-center">
-                      <DotLoader size={30} color="#2b7fff" />
-                    </div>
+                    <Spinner/>
                   )}
                   {children}
                 </div>

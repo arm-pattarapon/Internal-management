@@ -7,6 +7,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { Toaster } from "react-hot-toast";
 
 type Inputs = {
   email: string;
@@ -62,6 +63,7 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen flex justify-center items-center">
+      <Toaster position="top-center" />
       <div className="bg-white max-w-lg rounded overflow-hidden shadow-none md:shadow-lg p-4 w-full">
         <div className="flex justify-center">
           <img
