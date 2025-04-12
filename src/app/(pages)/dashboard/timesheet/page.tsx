@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -51,12 +52,12 @@ export default function TimesheetPage() {
   return (
     <div className="p-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
-        <button
+        {/* <button
           onClick={handleClick}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           + New Time Sheet
-        </button>
+        </button> */}
 
         <form className="w-full md:max-w-md">
           <div className="relative">
