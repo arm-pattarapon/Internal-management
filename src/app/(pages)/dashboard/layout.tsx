@@ -134,7 +134,7 @@ export default function DashboardLayout({
                         item.curent
                           ? "bg-blue-500 text-white shadow-sm shadow-blue-500"
                           : "text-sm text-gray-400 hover:bg-blue-300 hover:text-white",
-                        "p-2 rounded-lg flex cursor-pointer items-center"
+                        "p-2 rounded-lg flex cursor-pointer items-center select-none"
                       )}
                     >
                       {<item.icon className="me-1" />}
@@ -146,7 +146,7 @@ export default function DashboardLayout({
               {/* Sign Out button */}
               <div
                 onClick={() => handleSignOut(router)} // Pass the router to handleSignOut here
-                className="flex items-center p-2 cursor-pointer text-sm text-gray-400 hover:bg-blue-300 hover:text-white rounded-lg"
+                className="flex items-center p-2 cursor-pointer text-sm text-gray-400 hover:bg-blue-300 hover:text-white rounded-lg select-none"
               >
                 <LuLogOut className="me-1" />
                 Sign Out
@@ -212,7 +212,7 @@ export default function DashboardLayout({
                       alt="user"
                     />
                   </div>
-                  <div className="flex flex-col cursor-pointer">
+                  <div className="flex flex-col cursor-pointer select-none">
                     <div className="text-sm text-gray-600 font-semibold flex items-center">
                       {username}
                       <LuChevronDown className="text-blue-500 ms-5" />
