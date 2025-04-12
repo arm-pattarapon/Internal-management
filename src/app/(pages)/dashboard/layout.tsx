@@ -119,7 +119,7 @@ export default function DashboardLayout({
                     src="/Ignite_logo_crop.png"
                     alt="Ignite Logo"
                   />
-                  <div className="text-[24px] text-center font-semibold">
+                  <div className="text-[24px] text-center font-semibold select-none">
                     Ignite Idea
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export default function DashboardLayout({
           <div className="col-span-4">
             <div className="flex bg-[#ededed] flex-col w-full h-full">
               <div className="bg-white flex justify-between items-center h-15 px-5">
-                <div className="flex text-2xl">Dashboard</div>
+                <div className="flex text-2xl select-none">Dashboard</div>
                 <div className="flex items-center space-x-2">
                   <Menu as="div" className="relative">
                     {({ open }) => (
