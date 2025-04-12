@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import Link from "next/link";
 
 export default function NewProjectsPage() {
     const [startDate, setStartDate] = React.useState(new Date());
@@ -86,7 +87,9 @@ export default function NewProjectsPage() {
         </div>
 
         <div className="flex justify-end gap-4">
-            <Button variant="ghost" className="text-blue-600 hover:text-blue-700">cancel</Button>
+            <Link href="./projects">
+                <Button variant="ghost" className="text-blue-600 hover:text-blue-700">cancel</Button>
+            </Link>
             <Button className="bg-blue-600 hover:bg-blue-700">Create</Button>
         </div>
         </div>
