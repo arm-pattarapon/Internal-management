@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Column from "./_components/Column";
 import { Id, Project } from "./type";
 import Link from "next/link";
@@ -21,14 +21,18 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext } from "@dnd-kit/sortable";
+import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import Card from "./_components/Card";
 
 export default function projectsPage() {
   const [columns, setColumns] = useState<Column[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const columnIds = useMemo(() => {
+      return columns.map(columns=> columns.id)
+  },[projects])
 
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [activeColumn, setActiveColumn] = useState<Column | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -38,36 +42,58 @@ export default function projectsPage() {
     })
   );
 
+  function addColumn(){
+    
+  }
+
   function deleteProject(id: Id) {
     const newProjects = projects.filter((project) => project.id !== id);
     setProjects(newProjects);
   }
 
+  function deleteColumn(id:Id){
+    const newColumn = columns.filter((column) => column.id !== id)
+    setColumns(newColumn)
+  }
+
   function onDragStart(event: DragStartEvent) {
-    if (event.active.data.current?.type === "Project") {
+    console.log("draging :",event.active);
+    const type = event.active.data.current?.type
+    setActiveColumn(null)
+    setActiveProject(null)
+    
+    if (type === "Project") {
       setActiveProject(event.active.data.current?.project);
       return;
+    }else if(type === "Column"){
+      setActiveColumn(event.active.data.current?.column);
     }
   }
 
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    console.log("project after move: ", projects);
+    // console.log("project after move: ", projects);
     if (!over) return;
 
     const activeId = active.id;
     const overId = over.id;
 
     if (activeId === overId) return;
-
-    setProjects((projects) => {
-      const activeIndex = projects.findIndex(
-        (project) => project.id === activeId
-      );
-      const overIndex = projects.findIndex((project) => project.id === overId);
-
-      return arrayMove(projects, activeIndex, overIndex);
-    });
+    console.log('active',active);
+    console.log('over',over);
+    
+    const type = active.data.current?.type
+    if (type === "Column"){
+      setColumns((columns) => {
+        const activeIndex = columns.findIndex(
+          (column) => column.id === activeId
+        );
+        const overIndex = columns.findIndex((column) => column.id === overId);
+  
+        return arrayMove(columns, activeIndex, overIndex);
+      });
+    }
+   
   }
 
   function onDragOver(event: DragOverEvent) {
@@ -80,14 +106,16 @@ export default function projectsPage() {
 
     if (activeId === overId) return;
 
-    const isActive = active.data.current?.type === "Project";
-    const isOver = over.data.current?.type === "Project";
+    const isProjectActive = active.data.current?.type === "Project";
+    const isProjectOver = over.data.current?.type === "Project";
 
-    if (!isActive) return;
+    if (!isProjectActive) return;
 
-    if (!(isActive && isOver)) {
+    if (!(isProjectActive && isProjectOver)) {
       const activeProjectColumnId = active.data.current?.project.columnId;
       const overColumnId = over.data.current?.column.id;
+      console.log('test');
+      
 
       setProjects((projects) => {
         if (activeProjectColumnId === overColumnId) return projects;
@@ -129,43 +157,63 @@ export default function projectsPage() {
     }
   }
 
+  function generateId(){
+    return crypto.randomUUID()
+  }
+
   useEffect(() => {
     setColumns([
-      { id: `columnId-1`, title: "Backlog" },
-      { id: `columnId-2`, title: "In Progress" },
-      { id: `columnId-3`, title: "Completed" },
+      { id: 'columnId-1', title: "Backlog" },
+      { id: 'columnId-2', title: "In Progress"},
+      { id: 'columnId-3', title: "Completed" },
     ]);
 
     setProjects([
       {
-        id: 1,
+        id: generateId(),
         columnId: `columnId-1`,
         title: "Project Alpha",
         description: "Initial project setup",
-        createdAt: new Date("2023-01-01"),
-        updatedAt: new Date("2023-01-02"),
+        createdAt: new Date("2025-01-01"),
+        updatedAt: new Date("2025-01-02"),
       },
       {
-        id: 2,
+        id: generateId(),
         columnId: `columnId-1`,
         title: "Project Beta",
         description: "Research and development",
-        createdAt: new Date("2023-02-01"),
-        updatedAt: new Date("2023-02-05"),
+        createdAt: new Date("2025-02-01"),
+        updatedAt: new Date("2025-02-05"),
       },
       {
-        id: 5,
+        id: generateId(),
         columnId: `columnId-1`,
         title: "Project Epsilon",
         description: "Requirement gathering",
-        createdAt: new Date("2023-05-01"),
-        updatedAt: new Date("2023-05-03"),
+        createdAt: new Date("2025-03-01"),
+        updatedAt: new Date("2025-03-03"),
+      },
+      {
+        id: generateId(),
+        columnId: `columnId-1`,
+        title: "Project Epsilon",
+        description: "Requirement gathering",
+        createdAt: new Date("2025-02-01"),
+        updatedAt: new Date("2025-02-03"),
+      },
+      {
+        id: generateId(),
+        columnId: `columnId-1`,
+        title: "Project Epsilon",
+        description: "Requirement gathering",
+        createdAt: new Date("2025-01-01"),
+        updatedAt: new Date("2025-01-03"),
       },
     ]);
   }, []);
 
   return (
-    <div className="bg-white rounded shadow-sm p-5 w-full h-full">
+    <div className="bg-white rounded shadow-sm p-5 w-full h-full overflow-hidden">
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
@@ -236,29 +284,51 @@ export default function projectsPage() {
               >
                 + Project
               </Link>
+              <div onClick={addColumn}
+                className="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded hover:cursor-pointer"
+              >
+                + Status
+              </div>
             </div>
           </div>
 
-          <div className="flex gap-5 h-full overflow-x-hidden">
+          <div className="flex gap-5 h-full w-full max-w-[74vw] overflow-x-auto">
             {/* column kanban */}
-            {columns.map((column) => (
-              <Column
-                key={column.id}
-                id={column.id}
-                title={column.title}
-                projects={projects.filter(
-                  (project) => project.columnId == column.id
-                )}
-                deleteProject={() => ({})}
-              />
-            ))}
+            <SortableContext
+              strategy={horizontalListSortingStrategy}
+              items={columnIds}>
+              {columns.map((column) => (
+                <Column
+                  key={column.id}
+                  id={column.id}
+                  title={column.title}
+                  projects={projects.filter(
+                    (project) => project.columnId == column.id
+                  )}
+                  deleteColumn={deleteColumn}
+                  deleteProject={deleteProject}
+                />
+              ))}
+            </SortableContext>
+
           </div>
         </div>
 
         <DragOverlay>
           {activeProject && (
-            <Card project={activeProject} deleteProject={deleteProject} />
+            <Card project={activeProject} deleteProject={() => ({}) } />
           )}
+          {activeColumn && (
+            <Column
+              id={activeColumn.id}
+              title={activeColumn.title}
+              projects={projects.filter(
+                (project) => project.columnId == activeColumn.id
+              )}
+              deleteColumn={()=>({})}
+              deleteProject={() => ({}) }
+            />)
+          }
         </DragOverlay>
       </DndContext>
     </div>
