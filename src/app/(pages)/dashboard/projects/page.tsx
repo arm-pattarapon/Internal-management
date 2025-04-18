@@ -4,12 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Column from "./_components/Column";
 import { Id, Project } from "./type";
 import Link from "next/link";
-
-interface Column {
-  id: string;
-  title: string;
-}
-
+import { Button, Dialog, DialogPanel, DialogTitle, Field, Input } from '@headlessui/react'
 import {
   DndContext,
   DragEndEvent,
@@ -23,16 +18,55 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import Card from "./_components/Card";
+import { SubmitHandler, useForm } from "react-hook-form";
+import clsx from "clsx";
+
+interface Column {
+  id: string;
+  title: string;
+}
+
+type Inputs = {
+  status:string
+}
 
 export default function projectsPage() {
-  const [columns, setColumns] = useState<Column[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+
+  const [columns, setColumns] = useState<Column[]>([]);
   const columnIds = useMemo(() => {
-      return columns.map(columns=> columns.id)
-  },[projects])
+    return columns.map(columns => columns.id)
+  }, [columns])
 
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+
+
+  const [isNewStatusDialogOpen, setIsNewStatusDialogOpen] = useState(false)
+
+
+  function toggleNewStatusDialog() {
+    setIsNewStatusDialogOpen(!isNewStatusDialogOpen)
+  }
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<Inputs>();
+
+  const submitNewStatus: SubmitHandler<Inputs> = async ({status}) => {
+    setColumns((column)=>{
+      const newColumn = {
+        id: generateId(),
+        title: status,
+      }
+      return [...column, newColumn]
+    })
+    toggleNewStatusDialog();
+    reset();
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -42,30 +76,34 @@ export default function projectsPage() {
     })
   );
 
-  function addColumn(){
-    
-  }
-
   function deleteProject(id: Id) {
     const newProjects = projects.filter((project) => project.id !== id);
     setProjects(newProjects);
   }
 
-  function deleteColumn(id:Id){
+  function deleteColumn(id: Id) {
     const newColumn = columns.filter((column) => column.id !== id)
     setColumns(newColumn)
   }
 
+  function setStatus(id:Id, status:string){
+    setColumns((columns) =>
+      columns.map((column) =>
+        column.id === id ? { ...column, title: status } : column
+      )
+    );
+  }
+
   function onDragStart(event: DragStartEvent) {
-    console.log("draging :",event.active);
+    console.log("draging :", event.active);
     const type = event.active.data.current?.type
     setActiveColumn(null)
     setActiveProject(null)
-    
+
     if (type === "Project") {
       setActiveProject(event.active.data.current?.project);
       return;
-    }else if(type === "Column"){
+    } else if (type === "Column") {
       setActiveColumn(event.active.data.current?.column);
     }
   }
@@ -79,21 +117,21 @@ export default function projectsPage() {
     const overId = over.id;
 
     if (activeId === overId) return;
-    console.log('active',active);
-    console.log('over',over);
-    
+    console.log('active', active);
+    console.log('over', over);
+
     const type = active.data.current?.type
-    if (type === "Column"){
+    if (type === "Column") {
       setColumns((columns) => {
         const activeIndex = columns.findIndex(
           (column) => column.id === activeId
         );
         const overIndex = columns.findIndex((column) => column.id === overId);
-  
+
         return arrayMove(columns, activeIndex, overIndex);
       });
     }
-   
+
   }
 
   function onDragOver(event: DragOverEvent) {
@@ -115,7 +153,7 @@ export default function projectsPage() {
       const activeProjectColumnId = active.data.current?.project.columnId;
       const overColumnId = over.data.current?.column.id;
       console.log('test');
-      
+
 
       setProjects((projects) => {
         if (activeProjectColumnId === overColumnId) return projects;
@@ -157,14 +195,14 @@ export default function projectsPage() {
     }
   }
 
-  function generateId(){
+  function generateId() {
     return crypto.randomUUID()
   }
 
   useEffect(() => {
     setColumns([
       { id: 'columnId-1', title: "Backlog" },
-      { id: 'columnId-2', title: "In Progress"},
+      { id: 'columnId-2', title: "In Progress" },
       { id: 'columnId-3', title: "Completed" },
     ]);
 
@@ -284,11 +322,52 @@ export default function projectsPage() {
               >
                 + Project
               </Link>
-              <div onClick={addColumn}
+              <div onClick={toggleNewStatusDialog}
                 className="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded hover:cursor-pointer"
               >
                 + Status
               </div>
+              <Dialog open={isNewStatusDialogOpen} as="div" className="relative z-10 focus:outline-none" onClose={toggleNewStatusDialog}>
+                <div className="fixed inset-0 z-10 w-screen overflow-y-auto ">
+                  <div className="flex min-h-full items-center justify-center p-4">
+                    <DialogPanel
+                      transition
+                      className="w-full max-w-md shadow border-1 rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                    >
+                      <DialogTitle as="h3" className="text-base/7 font-medium text-black">
+                        Enter new status name.
+                      </DialogTitle>
+                      <form onSubmit={handleSubmit(submitNewStatus)}>
+                        <Field>
+                          <Input
+                            type="text"
+                            {...register("status", { required: true })}
+                            className={clsx(
+                              'mt-3 block w-full rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
+                              'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                            )}
+                          />
+                          {errors.status && <span className="text-red-400">This field is required</span>}
+                        </Field>
+                        <div className="mt-4 space-x-3">
+                          <Button
+                            className="inline-flex items-center gap-2 rounded-md bg-blue-500 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-blue-700 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 hover:cursor-pointer"
+                            type="submit"
+                          >
+                            Submit
+                          </Button>
+                          <Button
+                            className="inline-flex items-center gap-2 rounded-md bg-red-500 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-red-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 hover:cursor-pointer"
+                            onClick={toggleNewStatusDialog}
+                          >
+                            Cancle
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogPanel>
+                  </div>
+                </div>
+              </Dialog>
             </div>
           </div>
 
@@ -307,6 +386,7 @@ export default function projectsPage() {
                   )}
                   deleteColumn={deleteColumn}
                   deleteProject={deleteProject}
+                  setStatus={setStatus}
                 />
               ))}
             </SortableContext>
@@ -316,7 +396,7 @@ export default function projectsPage() {
 
         <DragOverlay>
           {activeProject && (
-            <Card project={activeProject} deleteProject={() => ({}) } />
+            <Card project={activeProject} deleteProject={() => ({})} />
           )}
           {activeColumn && (
             <Column
@@ -325,8 +405,9 @@ export default function projectsPage() {
               projects={projects.filter(
                 (project) => project.columnId == activeColumn.id
               )}
-              deleteColumn={()=>({})}
-              deleteProject={() => ({}) }
+              deleteColumn={() => ({})}
+              deleteProject={() => ({})}
+              setStatus={()=>({})}
             />)
           }
         </DragOverlay>
