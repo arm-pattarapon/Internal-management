@@ -28,7 +28,14 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
         return projects.map(project => project.id)
     }, [projects])
     const [mouseIsOver, setMouseIsOver] = useState(false);
+    
     const [isEditStatusDialogOpen, setIsEditStatusDialogOpen] = useState(false)
+    const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+
+    function setProjectDialog(params:boolean) {
+        setIsProjectDialogOpen(params)
+    }
+
     const {
         attributes,
         listeners,
@@ -43,14 +50,13 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                 type: 'Column',
                 column,
             },
-            disabled:isEditStatusDialogOpen
+            disabled:isEditStatusDialogOpen || isProjectDialogOpen
         }
     )
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: 1,
+        transition
     }
 
     const {
@@ -93,7 +99,7 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
             onMouseEnter={() => setMouseIsOver(true)}
             onMouseLeave={() => setMouseIsOver(false)}
             className="bg-white rounded-sm shadow-lg w-full flex flex-col border-1 border-gray-300 min-w-80 max-w-80">
-            <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm px-2 flex items-center justify-between hover:cursor-grab">
+            <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm px-2 flex items-center justify-between cursor-grab">
                 <div className="text-md text-left truncate select-none">{column.title}</div>
                 {mouseIsOver && (
                     <Menu as="div" className="relative">
@@ -170,7 +176,11 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                     strategy={verticalListSortingStrategy}
                     items={projectIds}>
                     {projects.map((project: any) => (
-                        <Card key={project.id} project={project} deleteProject={deleteProject} />
+                        <Card 
+                        key={project.id} 
+                        project={project} 
+                        deleteProject={deleteProject}
+                        setProjectDialog={setProjectDialog} />
                     ))}
                 </SortableContext>
             </div>

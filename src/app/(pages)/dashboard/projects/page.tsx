@@ -31,6 +31,7 @@ type Inputs = {
 }
 
 export default function projectsPage() {
+  
   const [projects, setProjects] = useState<Project[]>([]);
 
   const [columns, setColumns] = useState<Column[]>([]);
@@ -96,6 +97,7 @@ export default function projectsPage() {
 
   function onDragStart(event: DragStartEvent) {
     console.log("draging :", event.active);
+    document.body.style.setProperty('cursor', 'grabbing', 'important');
     const type = event.active.data.current?.type
     setActiveColumn(null)
     setActiveProject(null)
@@ -109,6 +111,7 @@ export default function projectsPage() {
   }
 
   function onDragEnd(event: DragEndEvent) {
+    document.body.style.cursor = 'default';
     const { active, over } = event;
     // console.log("project after move: ", projects);
     if (!over) return;
@@ -235,7 +238,7 @@ export default function projectsPage() {
         id: generateId(),
         columnId: `columnId-1`,
         title: "Project Epsilon",
-        description: "Requirement gathering",
+        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean pretium purus dolor, ut ornare elit venenatis et. Fusce et molestie arcu, quis semper ante. Duis nulla dui, accumsan quis cursus rutrum, pretium sit amet lacus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ornare sollicitudin tincidunt. Donec vestibulum erat quis pretium congue. Nam gravida tincidunt varius. Pellentesque porttitor massa augue, non commodo ante volutpat in. Mauris at pellentesque leo. Donec ultricies blandit ipsum, at pretium est molestie placerat. Sed non faucibus urna. Donec mollis sagittis odio eget commodo. Sed viverra felis ut erat tempor cursus. Aenean condimentum enim a quam sodales, sed porttitor tortor congue. Morbi laoreet urna enim, maximus imperdiet lacus tempus sit amet. In nec vestibulum neque. Praesent accumsan sapien eu lorem porta, sed aliquet metus mattis. In a placerat metus, et bibendum ante. Curabitur gravida leo ac nisi fringilla, eget fermentum lectus scelerisque. Etiam tempus ligula venenatis, venenatis ipsum at, iaculis magna. Nunc imperdiet neque sed dapibus lobortis. Phasellus quis placerat lacus, at laoreet nulla. Integer ut lorem semper purus mattis consectetur. Aenean quis porttitor diam, in pharetra massa. Etiam non aliquam eros. Suspendisse et commodo nulla.",
         createdAt: new Date("2025-02-01"),
         updatedAt: new Date("2025-02-03"),
       },
@@ -318,12 +321,12 @@ export default function projectsPage() {
               </div>
               <Link
                 href="./projects/newproject"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded"
+                className="inline-flex items-center gap-2 rounded-md bg-blue-500 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none hover:bg-blue-700 focus:outline-1 focus:outline-white open:bg-gray-700 hover:cursor-pointer"
               >
                 + Project
               </Link>
               <div onClick={toggleNewStatusDialog}
-                className="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded hover:cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-md bg-blue-400 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none hover:bg-blue-700 focus:outline-1 focus:outline-white open:bg-gray-700 hover:cursor-pointer"
               >
                 + Status
               </div>
@@ -396,7 +399,11 @@ export default function projectsPage() {
 
         <DragOverlay>
           {activeProject && (
-            <Card project={activeProject} deleteProject={() => ({})} />
+            <Card 
+            project={activeProject} 
+            deleteProject={() => ({})}
+            setProjectDialog={()=>({})}
+            />
           )}
           {activeColumn && (
             <Column
