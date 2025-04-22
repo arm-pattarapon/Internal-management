@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Column from "./_components/Column";
-import { Id, Project } from "./type";
+import { Project, Status } from "./type";
 import Link from "next/link";
 import { Button, Dialog, DialogPanel, DialogTitle, Field, Input } from '@headlessui/react'
 import {
@@ -20,27 +20,24 @@ import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-
 import Card from "./_components/Card";
 import { SubmitHandler, useForm } from "react-hook-form";
 import clsx from "clsx";
+import { getStatusData } from "./Api";
 
-interface Column {
-  id: string;
-  title: string;
-}
 
 type Inputs = {
-  status:string
+  status: string
 }
 
 export default function projectsPage() {
-  
+
   const [projects, setProjects] = useState<Project[]>([]);
 
-  const [columns, setColumns] = useState<Column[]>([]);
-  const columnIds = useMemo(() => {
-    return columns.map(columns => columns.id)
+  const [columns, setColumns] = useState<Status[]>([]);
+  const statusIds = useMemo(() => {
+    return columns.map(columns => columns._id)
   }, [columns])
 
   const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+  const [activeColumn, setActiveColumn] = useState<Status | null>(null);
 
 
   const [isNewStatusDialogOpen, setIsNewStatusDialogOpen] = useState(false)
@@ -57,10 +54,10 @@ export default function projectsPage() {
     formState: { errors },
   } = useForm<Inputs>();
 
-  const submitNewStatus: SubmitHandler<Inputs> = async ({status}) => {
-    setColumns((column)=>{
+  const submitNewStatus: SubmitHandler<Inputs> = async ({ status }) => {
+    setColumns((column) => {
       const newColumn = {
-        id: generateId(),
+        _id: generateId(),
         title: status,
       }
       return [...column, newColumn]
@@ -77,20 +74,20 @@ export default function projectsPage() {
     })
   );
 
-  function deleteProject(id: Id) {
-    const newProjects = projects.filter((project) => project.id !== id);
+  function deleteProject(id: string) {
+    const newProjects = projects.filter((project) => project._id !== id);
     setProjects(newProjects);
   }
 
-  function deleteColumn(id: Id) {
-    const newColumn = columns.filter((column) => column.id !== id)
+  function deleteColumn(id: string) {
+    const newColumn = columns.filter((column) => column._id !== id)
     setColumns(newColumn)
   }
 
-  function setStatus(id:Id, status:string){
+  function setStatus(id: string, status: string) {
     setColumns((columns) =>
       columns.map((column) =>
-        column.id === id ? { ...column, title: status } : column
+        column._id === id ? { ...column, title: status } : column
       )
     );
   }
@@ -104,6 +101,8 @@ export default function projectsPage() {
 
     if (type === "Project") {
       setActiveProject(event.active.data.current?.project);
+      console.log('activeProject: ', activeProject);
+
       return;
     } else if (type === "Column") {
       setActiveColumn(event.active.data.current?.column);
@@ -127,9 +126,9 @@ export default function projectsPage() {
     if (type === "Column") {
       setColumns((columns) => {
         const activeIndex = columns.findIndex(
-          (column) => column.id === activeId
+          (column) => column._id === activeId
         );
-        const overIndex = columns.findIndex((column) => column.id === overId);
+        const overIndex = columns.findIndex((column) => column._id === overId);
 
         return arrayMove(columns, activeIndex, overIndex);
       });
@@ -140,7 +139,6 @@ export default function projectsPage() {
   function onDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over) return;
-    console.log("drag over: ", over, "active: ", active);
 
     const activeId = active.id;
     const overId = over.id;
@@ -148,107 +146,89 @@ export default function projectsPage() {
     if (activeId === overId) return;
 
     const isProjectActive = active.data.current?.type === "Project";
-    const isProjectOver = over.data.current?.type === "Project";
 
     if (!isProjectActive) return;
 
-    if (!(isProjectActive && isProjectOver)) {
-      const activeProjectColumnId = active.data.current?.project.columnId;
-      const overColumnId = over.data.current?.column.id;
-      console.log('test');
+    const activeProjectstatusId = active.data.current?.project.statusId;
+    const overstatusId = over.data.current?.column?.id || over.data.current?.project?.statusId;
 
+    if (activeProjectstatusId === overstatusId) return;
 
-      setProjects((projects) => {
-        if (activeProjectColumnId === overColumnId) return projects;
-        const activeProject = projects.find(
-          (project) => project.id === activeId
-        );
-        const newProject = projects.map((project) => {
-          if (project.id === activeProject?.id) {
-            return {
-              ...project,
-              columnId: overColumnId,
-            };
-          }
-          return project;
-        });
+    setProjects((projects) => {
+      const activeProjectIndex = projects.findIndex((project) => project._id === activeId);
+      if (activeProjectIndex === -1) return projects;
 
-        return newProject;
-      });
-    } else {
-      const activeProjectColumnId = active.data.current?.project.columnId;
-      const overProjectColumnId = over.data.current?.project.columnId;
-      if (activeProjectColumnId === overProjectColumnId) return;
-      setProjects((projects) => {
-        const activeProject = projects.find(
-          (project) => project.id === activeId
-        );
-        const newProject = projects.map((project) => {
-          if (project.id === activeProject?.id) {
-            return {
-              ...project,
-              columnId: overProjectColumnId,
-            };
-          }
-          return project;
-        });
+      const updatedProjects = [...projects];
+      updatedProjects[activeProjectIndex] = {
+        ...updatedProjects[activeProjectIndex],
+        statusId: overstatusId,
+      };
 
-        return newProject;
-      });
-    }
+      return updatedProjects;
+    });
   }
 
   function generateId() {
     return crypto.randomUUID()
   }
+  
 
   useEffect(() => {
-    setColumns([
-      { id: 'columnId-1', title: "Backlog" },
-      { id: 'columnId-2', title: "In Progress" },
-      { id: 'columnId-3', title: "Completed" },
-    ]);
+      getStatusData().then((status) => {
+        setColumns(status);
+      });
 
     setProjects([
       {
-        id: generateId(),
-        columnId: `columnId-1`,
-        title: "Project Alpha",
+        _id: generateId(),
+        statusId: `statusId-1`,
+        name: "Project Alpha",
         description: "Initial project setup",
+        type: "Development",
+        projectManager: { _id: generateId(), username: "john_doe", role: "PM" },
+        businessAnalystLead: { _id: generateId(), username: "jane_smith", role: "BA" },
+        developerLead: { _id: generateId(), username: "alice_wonder", role: "Dev" },
+        users: [
+          { _id: generateId(), username: "john_doe", role: "Developer" },
+          { _id: generateId(), username: "jane_smith", role: "Manager" },
+        ],
         createdAt: new Date("2025-01-01"),
         updatedAt: new Date("2025-01-02"),
       },
       {
-        id: generateId(),
-        columnId: `columnId-1`,
-        title: "Project Beta",
-        description: "Research and development",
+        _id: generateId(),
+        statusId: `statusId-1`,
+        name: "Project Beta",
+        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla bibendum, quam non eleifend elementum, ex nibh porta ligula, sit amet pharetra orci nunc eu sapien. Duis aliquam ipsum purus. Aenean eu mi interdum, rutrum dolor sagittis, viverra mi. Sed lobortis tincidunt risus, vel pretium justo rutrum a. Integer leo arcu, auctor id imperdiet et, dictum in turpis. In scelerisque pulvinar nunc, ut interdum nulla mollis eu. Vestibulum quis iaculis leo, a auctor nisi. Sed pulvinar tortor nunc, sit amet dignissim lectus congue id.",
+        type: "Research",
+        projectManager: { _id: generateId(), username: "bob_builder", role: "PM" },
+        businessAnalystLead: { _id: generateId(), username: "alice_wonder", role: "BA" },
+        developerLead: { _id: generateId(), username: "charlie_brown", role: "Dev" },
+        users: [
+          { _id: generateId(), username: "alice_wonder", role: "Designer" },
+          { _id: generateId(), username: "bob_builder", role: "Engineer" },
+          { _id: generateId(), username: "bob_builder", role: "Engineer" },
+          { _id: generateId(), username: "bob_builder", role: "Engineer" },
+          { _id: generateId(), username: "bob_builder", role: "Engineer" },
+          { _id: generateId(), username: "bob_builder", role: "Engineer" },
+        ],
         createdAt: new Date("2025-02-01"),
         updatedAt: new Date("2025-02-05"),
       },
       {
-        id: generateId(),
-        columnId: `columnId-1`,
-        title: "Project Epsilon",
+        _id: generateId(),
+        statusId: `statusId-1`,
+        name: "Project Epsilon",
         description: "Requirement gathering",
+        type: "Analysis",
+        projectManager: { _id: generateId(), username: "diana_prince", role: "PM" },
+        businessAnalystLead: { _id: generateId(), username: "clark_kent", role: "BA" },
+        developerLead: { _id: generateId(), username: "bruce_wayne", role: "Dev" },
+        users: [
+          { _id: generateId(), username: "charlie_brown", role: "Analyst" },
+        ],
         createdAt: new Date("2025-03-01"),
         updatedAt: new Date("2025-03-03"),
-      },
-      {
-        id: generateId(),
-        columnId: `columnId-1`,
-        title: "Project Epsilon",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean pretium purus dolor, ut ornare elit venenatis et. Fusce et molestie arcu, quis semper ante. Duis nulla dui, accumsan quis cursus rutrum, pretium sit amet lacus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ornare sollicitudin tincidunt. Donec vestibulum erat quis pretium congue. Nam gravida tincidunt varius. Pellentesque porttitor massa augue, non commodo ante volutpat in. Mauris at pellentesque leo. Donec ultricies blandit ipsum, at pretium est molestie placerat. Sed non faucibus urna. Donec mollis sagittis odio eget commodo. Sed viverra felis ut erat tempor cursus. Aenean condimentum enim a quam sodales, sed porttitor tortor congue. Morbi laoreet urna enim, maximus imperdiet lacus tempus sit amet. In nec vestibulum neque. Praesent accumsan sapien eu lorem porta, sed aliquet metus mattis. In a placerat metus, et bibendum ante. Curabitur gravida leo ac nisi fringilla, eget fermentum lectus scelerisque. Etiam tempus ligula venenatis, venenatis ipsum at, iaculis magna. Nunc imperdiet neque sed dapibus lobortis. Phasellus quis placerat lacus, at laoreet nulla. Integer ut lorem semper purus mattis consectetur. Aenean quis porttitor diam, in pharetra massa. Etiam non aliquam eros. Suspendisse et commodo nulla.",
-        createdAt: new Date("2025-02-01"),
-        updatedAt: new Date("2025-02-03"),
-      },
-      {
-        id: generateId(),
-        columnId: `columnId-1`,
-        title: "Project Epsilon",
-        description: "Requirement gathering",
-        createdAt: new Date("2025-01-01"),
-        updatedAt: new Date("2025-01-03"),
       },
     ]);
   }, []);
@@ -331,11 +311,12 @@ export default function projectsPage() {
                 + Status
               </div>
               <Dialog open={isNewStatusDialogOpen} as="div" className="relative z-10 focus:outline-none" onClose={toggleNewStatusDialog}>
+                <div className='fixed inset-0 z-0 w-screen h-screen backdrop-blur-xs' />
                 <div className="fixed inset-0 z-10 w-screen overflow-y-auto ">
                   <div className="flex min-h-full items-center justify-center p-4">
                     <DialogPanel
                       transition
-                      className="w-full max-w-md shadow border-1 rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                      className="w-full max-w-md shadow border-1 rounded-xl bg-white p-6 duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
                     >
                       <DialogTitle as="h3" className="text-base/7 font-medium text-black">
                         Enter new status name.
@@ -378,14 +359,14 @@ export default function projectsPage() {
             {/* column kanban */}
             <SortableContext
               strategy={horizontalListSortingStrategy}
-              items={columnIds}>
+              items={statusIds}>
               {columns.map((column) => (
                 <Column
-                  key={column.id}
-                  id={column.id}
+                  key={column._id}
+                  _id={column._id}
                   title={column.title}
                   projects={projects.filter(
-                    (project) => project.columnId == column.id
+                    (project) => project.statusId == column._id
                   )}
                   deleteColumn={deleteColumn}
                   deleteProject={deleteProject}
@@ -399,22 +380,23 @@ export default function projectsPage() {
 
         <DragOverlay>
           {activeProject && (
-            <Card 
-            project={activeProject} 
-            deleteProject={() => ({})}
-            setProjectDialog={()=>({})}
+            <Card
+              project={activeProject}
+              status={{_id:'',title:''}}
+              deleteProject={() => ({})}
+              setProjectDialog={() => ({})}
             />
           )}
           {activeColumn && (
             <Column
-              id={activeColumn.id}
+              _id={activeColumn._id}
               title={activeColumn.title}
               projects={projects.filter(
-                (project) => project.columnId == activeColumn.id
+                (project) => project.statusId == activeColumn._id
               )}
               deleteColumn={() => ({})}
               deleteProject={() => ({})}
-              setStatus={()=>({})}
+              setStatus={() => ({})}
             />)
           }
         </DragOverlay>
@@ -422,3 +404,4 @@ export default function projectsPage() {
     </div>
   );
 }
+

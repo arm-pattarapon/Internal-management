@@ -1,7 +1,7 @@
 "use client"
 
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Id, Project } from "../type";
+import { Project } from "../type";
 import Card from "./Card";
 import { useMemo, useState } from "react";
 import { CSS } from '@dnd-kit/utilities';
@@ -10,22 +10,23 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import clsx from "clsx";
 
 interface Column {
-    id: string;
+    _id: string;
     title: string;
-    deleteProject: (id: Id) => void;
-    deleteColumn: (id: Id) => void;
-    setStatus:(id:Id, status:string)=> void;
+    deleteProject: (id: string) => void;
+    deleteColumn: (id: string) => void;
+    setStatus:(id: string, status:string)=> void;
     projects: Project[];
+
 }
 
 type Inputs = {
-    id: Id,
+    _id: string,
     status: string
 }
 
 export default function Column({ projects, deleteProject, deleteColumn, setStatus, ...column }: Column) {
     const projectIds = useMemo(() => {
-        return projects.map(project => project.id)
+        return projects.map(project => project._id)
     }, [projects])
     const [mouseIsOver, setMouseIsOver] = useState(false);
     
@@ -45,7 +46,7 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
         isDragging,
     } = useSortable(
         {
-            id: column.id,
+            id: column._id,
             data: {
                 type: 'Column',
                 column,
@@ -73,8 +74,8 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
     }
 
     const submitNewStatus: SubmitHandler<Inputs> = async (data) =>{
-        const {status, id} = data
-        setStatus(id,status)
+        const {status, _id} = data
+        setStatus(_id,status)
         toggleNewStatusDialog()
         reset()   
     }
@@ -99,7 +100,7 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
             onMouseEnter={() => setMouseIsOver(true)}
             onMouseLeave={() => setMouseIsOver(false)}
             className="bg-white rounded-sm shadow-lg w-full flex flex-col border-1 border-gray-300 min-w-80 max-w-80">
-            <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm px-2 flex items-center justify-between cursor-grab">
+            <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm px-2 flex items-center justify-between">
                 <div className="text-md text-left truncate select-none">{column.title}</div>
                 {mouseIsOver && (
                     <Menu as="div" className="relative">
@@ -112,20 +113,20 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                             <MenuItem as="div" onClick={toggleNewStatusDialog} className=" hover:bg-blue-500 rounded-t-sm">
                                 Edit
                             </MenuItem>
-                            <MenuItem as="div" onClick={() => deleteColumn(column.id)} className="hover:bg-red-400 rounded-b-sm">
+                            <MenuItem as="div" onClick={() => deleteColumn(column._id)} className="hover:bg-red-400 rounded-b-sm">
                                 Delete
                             </MenuItem>
                         </MenuItems>
                     </Menu>
-
                 )}
             </div>
             <Dialog open={isEditStatusDialogOpen} as="div" className="relative z-10 focus:outline-none" onClose={toggleNewStatusDialog}>
-                <div className="fixed inset-0 z-10 w-screen overflow-y-auto ">
+                <div className='fixed inset-0 z-0 w-screen h-screen backdrop-blur-xs'/>
+                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
                         <DialogPanel
                             transition
-                            className="w-full max-w-md shadow border-1 rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                            className="w-full max-w-md shadow border-1 rounded-xl bg-white p-6 duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
                         >
                             <DialogTitle as="h3" className="text-base/7 font-medium text-black">
                                 Enter new status name.
@@ -143,10 +144,10 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                                         )}
                                     />
                                     <Input
-                                        defaultValue={column.id}
+                                        defaultValue={column._id}
                                         disabled
                                         hidden
-                                        {...register("id",{required: true})}
+                                        {...register("_id",{required: true})}
                                     />
                                     {errors.status && <span className="text-red-400">This field is required</span>}
                                 </Field>
@@ -172,13 +173,14 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
             <div className="flex flex-col flex-grow space-y-3 p-3 overflow-y-auto max-h-100">
                 {/* Card */}
                 <SortableContext
-                    id={column.id}
+                    id={column._id}
                     strategy={verticalListSortingStrategy}
                     items={projectIds}>
                     {projects.map((project: any) => (
                         <Card 
-                        key={project.id} 
-                        project={project} 
+                        key={project._id} 
+                        project={project}
+                        status={column}
                         deleteProject={deleteProject}
                         setProjectDialog={setProjectDialog} />
                     ))}
