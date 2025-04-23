@@ -20,7 +20,8 @@ import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-
 import Card from "./_components/Card";
 import { SubmitHandler, useForm } from "react-hook-form";
 import clsx from "clsx";
-import { getStatusData } from "./Api";
+import { createStatus, deleteStatus, getCardData, getStatusData, updateStatus } from "./Api";
+import ProjectDialog from "./_components/ProjectDialog";
 
 
 type Inputs = {
@@ -30,21 +31,23 @@ type Inputs = {
 export default function projectsPage() {
 
   const [projects, setProjects] = useState<Project[]>([]);
-
   const [columns, setColumns] = useState<Status[]>([]);
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [activeColumn, setActiveColumn] = useState<Status | null>(null);
+  const [isNewStatusDialogOpen, setIsNewStatusDialogOpen] = useState(false)
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
+  
   const statusIds = useMemo(() => {
     return columns.map(columns => columns._id)
   }, [columns])
 
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [activeColumn, setActiveColumn] = useState<Status | null>(null);
-
-
-  const [isNewStatusDialogOpen, setIsNewStatusDialogOpen] = useState(false)
-
-
   function toggleNewStatusDialog() {
     setIsNewStatusDialogOpen(!isNewStatusDialogOpen)
+    reset();
+  }
+
+  function toggleProjectDialog(){
+    setIsProjectDialogOpen(prev => !prev)
   }
 
   const {
@@ -55,15 +58,18 @@ export default function projectsPage() {
   } = useForm<Inputs>();
 
   const submitNewStatus: SubmitHandler<Inputs> = async ({ status }) => {
+    const newStatus = await createStatus(status);
+    if(!newStatus) return;
+    const {data} = newStatus;
+
     setColumns((column) => {
       const newColumn = {
-        _id: generateId(),
+        _id: data._id,
         title: status,
       }
       return [...column, newColumn]
     })
     toggleNewStatusDialog();
-    reset();
   }
 
   const sensors = useSensors(
@@ -82,6 +88,7 @@ export default function projectsPage() {
   function deleteColumn(id: string) {
     const newColumn = columns.filter((column) => column._id !== id)
     setColumns(newColumn)
+    deleteStatus(id)
   }
 
   function setStatus(id: string, status: string) {
@@ -90,6 +97,7 @@ export default function projectsPage() {
         column._id === id ? { ...column, title: status } : column
       )
     );
+    updateStatus(id,status);
   }
 
   function onDragStart(event: DragStartEvent) {
@@ -150,7 +158,7 @@ export default function projectsPage() {
     if (!isProjectActive) return;
 
     const activeProjectstatusId = active.data.current?.project.statusId;
-    const overstatusId = over.data.current?.column?.id || over.data.current?.project?.statusId;
+    const overstatusId = over.data.current?.column?._id || over.data.current?.project?.statusId;
 
     if (activeProjectstatusId === overstatusId) return;
 
@@ -168,69 +176,14 @@ export default function projectsPage() {
     });
   }
 
-  function generateId() {
-    return crypto.randomUUID()
-  }
-  
-
   useEffect(() => {
-      getStatusData().then((status) => {
-        setColumns(status);
-      });
+      getStatusData().then(
+        status => setColumns(status)
+      )
 
-    setProjects([
-      {
-        _id: generateId(),
-        statusId: `statusId-1`,
-        name: "Project Alpha",
-        description: "Initial project setup",
-        type: "Development",
-        projectManager: { _id: generateId(), username: "john_doe", role: "PM" },
-        businessAnalystLead: { _id: generateId(), username: "jane_smith", role: "BA" },
-        developerLead: { _id: generateId(), username: "alice_wonder", role: "Dev" },
-        users: [
-          { _id: generateId(), username: "john_doe", role: "Developer" },
-          { _id: generateId(), username: "jane_smith", role: "Manager" },
-        ],
-        createdAt: new Date("2025-01-01"),
-        updatedAt: new Date("2025-01-02"),
-      },
-      {
-        _id: generateId(),
-        statusId: `statusId-1`,
-        name: "Project Beta",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla bibendum, quam non eleifend elementum, ex nibh porta ligula, sit amet pharetra orci nunc eu sapien. Duis aliquam ipsum purus. Aenean eu mi interdum, rutrum dolor sagittis, viverra mi. Sed lobortis tincidunt risus, vel pretium justo rutrum a. Integer leo arcu, auctor id imperdiet et, dictum in turpis. In scelerisque pulvinar nunc, ut interdum nulla mollis eu. Vestibulum quis iaculis leo, a auctor nisi. Sed pulvinar tortor nunc, sit amet dignissim lectus congue id.",
-        type: "Research",
-        projectManager: { _id: generateId(), username: "bob_builder", role: "PM" },
-        businessAnalystLead: { _id: generateId(), username: "alice_wonder", role: "BA" },
-        developerLead: { _id: generateId(), username: "charlie_brown", role: "Dev" },
-        users: [
-          { _id: generateId(), username: "alice_wonder", role: "Designer" },
-          { _id: generateId(), username: "bob_builder", role: "Engineer" },
-          { _id: generateId(), username: "bob_builder", role: "Engineer" },
-          { _id: generateId(), username: "bob_builder", role: "Engineer" },
-          { _id: generateId(), username: "bob_builder", role: "Engineer" },
-          { _id: generateId(), username: "bob_builder", role: "Engineer" },
-        ],
-        createdAt: new Date("2025-02-01"),
-        updatedAt: new Date("2025-02-05"),
-      },
-      {
-        _id: generateId(),
-        statusId: `statusId-1`,
-        name: "Project Epsilon",
-        description: "Requirement gathering",
-        type: "Analysis",
-        projectManager: { _id: generateId(), username: "diana_prince", role: "PM" },
-        businessAnalystLead: { _id: generateId(), username: "clark_kent", role: "BA" },
-        developerLead: { _id: generateId(), username: "bruce_wayne", role: "Dev" },
-        users: [
-          { _id: generateId(), username: "charlie_brown", role: "Analyst" },
-        ],
-        createdAt: new Date("2025-03-01"),
-        updatedAt: new Date("2025-03-03"),
-      },
-    ]);
+      getCardData().then(
+        card => setProjects(card)
+      )
   }, []);
 
   return (
@@ -371,6 +324,8 @@ export default function projectsPage() {
                   deleteColumn={deleteColumn}
                   deleteProject={deleteProject}
                   setStatus={setStatus}
+                  setActiveProject={setActiveProject}
+                  toggleProjectDialog={toggleProjectDialog}
                 />
               ))}
             </SortableContext>
@@ -382,9 +337,9 @@ export default function projectsPage() {
           {activeProject && (
             <Card
               project={activeProject}
-              status={{_id:'',title:''}}
               deleteProject={() => ({})}
-              setProjectDialog={() => ({})}
+              setActiveProject={setActiveProject}
+              toggleProjectDialog={()=>({})}
             />
           )}
           {activeColumn && (
@@ -397,10 +352,17 @@ export default function projectsPage() {
               deleteColumn={() => ({})}
               deleteProject={() => ({})}
               setStatus={() => ({})}
+              setActiveProject={()=> ({})}
+              toggleProjectDialog={()=>({})}
             />)
           }
         </DragOverlay>
       </DndContext>
+      
+
+      {activeProject && (
+        <ProjectDialog project={activeProject} status={columns} isProjectDialogOpen={isProjectDialogOpen} toggleProjectDialog={toggleProjectDialog} />
+      )}
     </div>
   );
 }

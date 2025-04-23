@@ -1,8 +1,13 @@
 
 export type Users = {
     readonly _id: string;
-    readonly username: string
+    readonly name: string
     role:string
+}
+
+interface LeadInterface{
+    _id: string,
+    name: string
 }
 
 export type Project = {
@@ -11,10 +16,12 @@ export type Project = {
     name: string;
     type: string;
     description: string;
-    projectManager: Users;
-    businessAnalystLead: Users;
-    developerLead: Users;
+    projectManager: LeadInterface;
+    businessanalystLead: LeadInterface;
+    developerLead: LeadInterface;
     users: Users[];
+    startDate: Date | null;
+    dueDate: Date | null;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }

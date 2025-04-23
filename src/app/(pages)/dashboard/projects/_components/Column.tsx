@@ -15,6 +15,8 @@ interface Column {
     deleteProject: (id: string) => void;
     deleteColumn: (id: string) => void;
     setStatus:(id: string, status:string)=> void;
+    setActiveProject:(project:Project) => void;
+    toggleProjectDialog:() => void;
     projects: Project[];
 
 }
@@ -24,18 +26,13 @@ type Inputs = {
     status: string
 }
 
-export default function Column({ projects, deleteProject, deleteColumn, setStatus, ...column }: Column) {
+export default function Column({ projects, deleteProject, deleteColumn, setStatus, setActiveProject, toggleProjectDialog, ...column }: Column) {
     const projectIds = useMemo(() => {
         return projects.map(project => project._id)
     }, [projects])
     const [mouseIsOver, setMouseIsOver] = useState(false);
     
     const [isEditStatusDialogOpen, setIsEditStatusDialogOpen] = useState(false)
-    const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
-
-    function setProjectDialog(params:boolean) {
-        setIsProjectDialogOpen(params)
-    }
 
     const {
         attributes,
@@ -51,7 +48,7 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                 type: 'Column',
                 column,
             },
-            disabled:isEditStatusDialogOpen || isProjectDialogOpen
+            disabled:isEditStatusDialogOpen
         }
     )
 
@@ -103,7 +100,7 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
             <div className=" bg-[#F0F6FF] w-full h-10 rounded-t-sm px-2 flex items-center justify-between">
                 <div className="text-md text-left truncate select-none">{column.title}</div>
                 {mouseIsOver && (
-                    <Menu as="div" className="relative">
+                    <Menu as="div" className="relative z-10">
                         <MenuButton>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 hover:cursor-pointer">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
@@ -180,9 +177,10 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                         <Card 
                         key={project._id} 
                         project={project}
-                        status={column}
                         deleteProject={deleteProject}
-                        setProjectDialog={setProjectDialog} />
+                        toggleProjectDialog={toggleProjectDialog}
+                        setActiveProject={setActiveProject}
+                        />
                     ))}
                 </SortableContext>
             </div>
