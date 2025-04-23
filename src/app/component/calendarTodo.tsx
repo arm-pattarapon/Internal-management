@@ -16,6 +16,7 @@ interface ProjectEntry {
 interface TaskEntry {
   task: string;
   hour: number;
+  remark?: string;
 }
 
 export default function CalendarTodo() {
@@ -256,7 +257,7 @@ export default function CalendarTodo() {
               {(
                 taskDetails[`${selectedProjectIndex}-${selectedDay}`] || []
               ).map((task, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
+                <><div key={index} className="flex items-center gap-2 mb-2">
                   <input
                     type="text"
                     value={task.task}
@@ -265,10 +266,9 @@ export default function CalendarTodo() {
                       const updated = [...(taskDetails[key] || [])];
                       updated[index].task = e.target.value;
                       setTaskDetails({ ...taskDetails, [key]: updated });
-                    }}
+                    } }
                     className="flex-1 border px-2 py-1 rounded"
-                    placeholder="Task"
-                  />
+                    placeholder="Task" />
                   <input
                     type="number"
                     min={0}
@@ -278,22 +278,32 @@ export default function CalendarTodo() {
                       const updated = [...(taskDetails[key] || [])];
                       updated[index].hour = parseFloat(e.target.value) || 0;
                       setTaskDetails({ ...taskDetails, [key]: updated });
-                    }}
+                    } }
                     className="w-24 border px-2 py-1 rounded text-right"
-                    placeholder="Hour"
-                  />
+                    placeholder="Hour" />
+
                   <button
                     onClick={() => {
                       const key = `${selectedProjectIndex}-${selectedDay}`;
                       const updated = [...(taskDetails[key] || [])];
                       updated.splice(index, 1);
                       setTaskDetails({ ...taskDetails, [key]: updated });
-                    }}
+                    } }
                     className="text-red-500 hover:text-red-700 px-2"
                   >
                     ✕
                   </button>
-                </div>
+                </div><input
+                    type="text"
+                    value={task.remark || ""}
+                    onChange={(e) => {
+                      const key = `${selectedProjectIndex}-${selectedDay}`;
+                      const updated = [...(taskDetails[key] || [])];
+                      updated[index].remark = e.target.value;
+                      setTaskDetails({ ...taskDetails, [key]: updated });
+                    } }
+                    className="w-full border px-2 py-1 rounded mb-4"
+                    placeholder="Remark (optional)" /></>
               ))}
               <button
                 onClick={() => {
