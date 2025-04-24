@@ -1,9 +1,7 @@
 import axios from "axios";
-import { Project, Status } from "./type";
+import { Project, Status, Users } from "./type";
 
 export async function getStatusData():Promise<Status[]>{
-    console.log('start get status');
-    
     const status = await axios.get<Status[]>(`${process.env.NEXT_PUBLIC_API_URL}/project-status/findAll`)
         .then(response => response.data);
     return status;
@@ -11,9 +9,12 @@ export async function getStatusData():Promise<Status[]>{
 
 export async function getCardData() {
     const card = await axios.get<Project[]>(`${process.env.NEXT_PUBLIC_API_URL}/projects/card`).then(res=>res.data)
-    console.log('card: ',card);
-    
     return card
+}
+
+export async function getAllUsers() {
+    const response = await axios.get<Users[]>(`${process.env.NEXT_PUBLIC_API_URL}/user`)
+    return response.data;
 }
 
 export async function deleteStatus(id:string) {
@@ -34,5 +35,12 @@ export async function updateStatus(_id:string, title:string) {
             _id,title
         },
         { headers: { "Content-Type": "application/json" } }
+    )
+}
+
+export async function updateProjectStatus(_id:string, statusId: string) {
+    axios.put(`${process.env.NEXT_PUBLIC_API_URL}/projects/update`,
+        [{_id,statusId}],
+        {headers: { "Content-Type": "application/json" }}
     )
 }

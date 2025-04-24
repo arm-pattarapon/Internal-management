@@ -20,8 +20,10 @@ import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-
 import Card from "./_components/Card";
 import { SubmitHandler, useForm } from "react-hook-form";
 import clsx from "clsx";
-import { createStatus, deleteStatus, getCardData, getStatusData, updateStatus } from "./Api";
+import { createStatus, deleteStatus, getCardData, getStatusData, updateProjectStatus, updateStatus } from "./Api";
 import ProjectDialog from "./_components/ProjectDialog";
+import MemberDialog from "./_components/MemberDialog";
+import SearchBox from "./_components/SearchBox";
 
 
 type Inputs = {
@@ -34,6 +36,9 @@ export default function projectsPage() {
   const [columns, setColumns] = useState<Status[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [activeColumn, setActiveColumn] = useState<Status | null>(null);
+  const [projectTypes , setProjectTypes] = useState<string[]>([])
+
+  const [isMemberDialogOpen, setIsMemberDialogOpen] = useState(false);
   const [isNewStatusDialogOpen, setIsNewStatusDialogOpen] = useState(false)
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
   
@@ -49,6 +54,10 @@ export default function projectsPage() {
   function toggleProjectDialog(){
     setIsProjectDialogOpen(prev => !prev)
   }
+
+  function toggleMemberDialog() {
+    setIsMemberDialogOpen(prev=>!prev)
+}
 
   const {
     register,
@@ -101,17 +110,14 @@ export default function projectsPage() {
   }
 
   function onDragStart(event: DragStartEvent) {
+    setActiveColumn(null)
+    setActiveProject(null)
     console.log("draging :", event.active);
     document.body.style.setProperty('cursor', 'grabbing', 'important');
     const type = event.active.data.current?.type
-    setActiveColumn(null)
-    setActiveProject(null)
 
     if (type === "Project") {
       setActiveProject(event.active.data.current?.project);
-      console.log('activeProject: ', activeProject);
-
-      return;
     } else if (type === "Column") {
       setActiveColumn(event.active.data.current?.column);
     }
@@ -141,7 +147,8 @@ export default function projectsPage() {
         return arrayMove(columns, activeIndex, overIndex);
       });
     }
-
+    setActiveColumn(null)
+    setActiveProject(null)
   }
 
   function onDragOver(event: DragOverEvent) {
@@ -174,16 +181,27 @@ export default function projectsPage() {
 
       return updatedProjects;
     });
+    console.log('activeProjectId: ',activeId ,'overstatusId: ',overstatusId);
+    
+    updateProjectStatus(String(activeId),overstatusId);
   }
 
   useEffect(() => {
-      getStatusData().then(
-        status => setColumns(status)
-      )
+      async function fetchInitialData() {
+        try {
+          const [status, card] = await Promise.all([getStatusData(), getCardData()]);
+          setColumns(status);
+          setProjects(card);
+          const projectType = card.map(({ type }) => type);
+          setProjectTypes(projectType);
+          console.log('project types:', projectTypes);
+        } catch (error) {
+          console.error('Error fetching initial data:', error);
+        }
+      }
 
-      getCardData().then(
-        card => setProjects(card)
-      )
+      fetchInitialData();
+
   }, []);
 
   return (
@@ -203,39 +221,7 @@ export default function projectsPage() {
           <hr className="border-1 rounded text-gray-300 mt-5 mb-3" />
 
           <div className="grid grid-cols-3 gap-5 mb-3 ">
-            <div>
-              <label
-                htmlFor="default-search"
-                className="mb-2 text-sm font-medium text-gray-900 sr-only"
-              >
-                Search
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                  <svg
-                    className="w-3.5 h-3.5 text-gray-500 "
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                    />
-                  </svg>
-                </div>
-                <input
-                  type="search"
-                  id="default-search"
-                  className="block w-full ps-10 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-[#F0F6FF] focus:ring-blue-500 focus:border-blue-500 "
-                  placeholder="Search Projects"
-                />
-              </div>
-            </div>
+            <SearchBox placeholder="Search Projects"/>
             <div className="col-span-2 flex space-x-5">
               <div className="w-50">
                 <label
@@ -326,6 +312,7 @@ export default function projectsPage() {
                   setStatus={setStatus}
                   setActiveProject={setActiveProject}
                   toggleProjectDialog={toggleProjectDialog}
+                  toggleMemberDialog={toggleMemberDialog}
                 />
               ))}
             </SortableContext>
@@ -339,6 +326,7 @@ export default function projectsPage() {
               project={activeProject}
               deleteProject={() => ({})}
               setActiveProject={setActiveProject}
+              toggleProjectMemberDialog={toggleMemberDialog}
               toggleProjectDialog={()=>({})}
             />
           )}
@@ -354,15 +342,25 @@ export default function projectsPage() {
               setStatus={() => ({})}
               setActiveProject={()=> ({})}
               toggleProjectDialog={()=>({})}
+              toggleMemberDialog={()=>({})}
             />)
           }
         </DragOverlay>
       </DndContext>
       
 
-      {activeProject && (
-        <ProjectDialog project={activeProject} status={columns} isProjectDialogOpen={isProjectDialogOpen} toggleProjectDialog={toggleProjectDialog} />
+      {activeProject && isProjectDialogOpen && (
+        <ProjectDialog 
+          project={activeProject} 
+          status={columns}
+          type={projectTypes}
+          isProjectDialogOpen={isProjectDialogOpen} 
+          toggleProjectDialog={toggleProjectDialog} 
+          toggleMemberDialog={toggleMemberDialog}
+          setActiveProject={setActiveProject} />
       )}
+      
+      <MemberDialog projectMember={activeProject?.users} isOpen={isMemberDialogOpen} toggleMemberDialog={toggleMemberDialog}/>
     </div>
   );
 }

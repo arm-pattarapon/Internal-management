@@ -4,34 +4,33 @@ import { Project, Status } from '../type';
 import clsx from 'clsx';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 
+
 interface props {
     project: Project;
     status: Status[];
+    type: string[];
     isProjectDialogOpen: boolean;
     toggleProjectDialog: () => void;
+    toggleMemberDialog: () => void;
+    setActiveProject: (project: Project | null) => void;
 }
 
-const people = [
-    { id: '1', title: 'Tom Cook' },
-    { id: '2', title: 'Wade Cooper' },
-    { id: '3', title: 'Tanya Fox' },
-    { id: '4', title: 'Arlene Mccoy' },
-    { id: '5', title: 'Devon Webb' },
-]
-
-function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDialog }: props) {
+function ProjectDialog({ project, status, type, isProjectDialogOpen, toggleMemberDialog, toggleProjectDialog, setActiveProject }: props) {
     const [isShowDetail, setIsShowDetail] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const descriptionOverflow = project ? project.description.length >= 200 : false;
+    const descriptionOverflow = project.description.length >= 200;
 
-    const [query, setQuery] = useState('')
-    const [selected, setSelected] = useState<Status | null>(null)
+    const [queryType, setQueryType] = useState('')
+    const [selectedStatus, setSelectedStatus] = useState<Status>(status.find(s => s._id === project.statusId) || status[0])
+    const [selectedType, setSelectedType] = useState<string | null>(project.type)
 
-    const filteredPeople =
-        query === ''
-            ? people
-            : people.filter((person) => {
-                return person.title.toLowerCase().includes(query.toLowerCase())
+  
+
+    const filteredType =
+        queryType === ''
+            ? type
+            : type.filter((t) => {
+                return t.toLowerCase().includes(queryType.toLowerCase())
             })
 
     const toggleEditMode = () => {
@@ -42,19 +41,26 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
         setIsShowDetail(prev => !prev)
     }
 
-    function toggleDialog(){
+    function toggleDialog() {
         toggleProjectDialog()
         setEditMode(false)
     }
 
+
+
+    function closeDialog() {
+        setActiveProject(null)
+        toggleDialog()
+    }
+
     return (
-        <Dialog open={isProjectDialogOpen} as="div" className="z-10 focus:outline-none" onClose={toggleDialog}>
+        <Dialog open={isProjectDialogOpen} as="div" className="z-10 focus:outline-none" onClose={closeDialog}>
             <div className='fixed inset-0 z-0 w-screen h-screen backdrop-blur-xs' />
             <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
                 <div className="flex min-h-full items-center justify-center p-4">
                     <DialogPanel
                         transition
-                        className="relative w-full max-w-lg border-1 shadow rounded-xl bg-white p-6 duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                        className="relative w-full max-w-3xl border-1 shadow rounded-xl bg-white p-6 duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
                     >
                         <div className='absolute flex space-x-2 right-5 cursor-pointer'>
                             {!editMode && (
@@ -64,7 +70,7 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                     </svg>
                                 </div>
                             )}
-                            <div onClick={toggleDialog}>
+                            <div onClick={closeDialog}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                                 </svg>
@@ -125,23 +131,35 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                 <div className='flex justify-evenly mt-3'>
                                     <div className='flex flex-col items-center'>
                                         <div className='text-xs'>Start Date</div>
-                                        <div className='text-xs text-black/50'>1/1/2564</div>
+                                        <div className='text-xs text-black/50'>
+                                            {
+                                                project.startDate
+                                                    ? new Date(project.startDate).toLocaleDateString('th-TH')
+                                                    : '-'
+                                            }
+                                        </div>
                                     </div>
                                     <div className='flex flex-col items-center'>
                                         <div className='text-xs'>Due Date</div>
-                                        <div className='text-xs text-black/50'>1/1/2564</div>
+                                        <div className='text-xs text-black/50'>
+                                            {
+                                                project.dueDate
+                                                    ? new Date(project.dueDate).toLocaleDateString('th-TH')
+                                                    : '-'
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </>
                         ) : (
                             <form>
-                                <Fieldset>
+                                <Fieldset className='flex flex-col space-y-3'>
                                     <Legend className="text-lg font-bold">Project details</Legend>
                                     <Field>
                                         <Label className="text-sm/6 font-medium text-black">Project Name</Label>
                                         <Input
                                             className={clsx(
-                                                'mt-3 block w-full rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
+                                                'block w-full rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
                                                 'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
                                             )}
                                             placeholder={project.name}
@@ -153,19 +171,19 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                         <div className="relative">
                                             <Select
                                                 className={clsx(
-                                                    'mt-3 block w-full appearance-none rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
+                                                    'block w-full appearance-none rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
                                                     'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
                                                 )}
-                                                value={project.statusId}
+                                                value={selectedStatus._id}
                                                 onChange={(e) => {
                                                     const selectedStatus = e.target.value;
-                                                    // project.statusId = selectedStatus
-                                                    console.log('Selected Status:', selectedStatus);
+                                                    const newSelectedStatus = status.find(s => s._id === selectedStatus)
+                                                    setSelectedStatus(newSelectedStatus || status[0])
                                                 }}
                                             >
-                                                {status.map(status => (
-                                                    <option  
-                                                        key={status._id} 
+                                                {status.map((status, index) => (
+                                                    <option
+                                                        key={index}
                                                         value={status._id}
                                                     >{status.title}</option>
                                                 ))}
@@ -178,15 +196,18 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                     </Field>
                                     <Field>
                                         <Label className="text-sm/6 font-medium text-black">Project Type</Label>
-                                        <Combobox value={selected} onChange={(value) => setSelected(value)} onClose={() => setQuery('')}>
-                                            <div className="relative mt-3">
+                                        <Combobox value={selectedType} onChange={(value) => setSelectedType(value)} onClose={() => setQueryType('')}>
+                                            <div className="relative">
                                                 <ComboboxInput
                                                     className={clsx(
                                                         'w-full rounded-lg border-1 bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-black',
                                                         'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
                                                     )}
-                                                    displayValue={(person: Status | null) => person?.title || ''}
-                                                    onChange={(event) => setQuery(event.target.value)}
+                                                    displayValue={() => selectedType || ''}
+                                                    onChange={(event) => {
+                                                        setQueryType(event.target.value);
+                                                        setSelectedType(event.target.value);
+                                                    }}
                                                 />
                                                 <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
                                                     <ChevronDownIcon className="size-4 fill-white/60 group-data-[hover]:fill-white" />
@@ -201,14 +222,14 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                                     'transition duration-100 ease-in data-[leave]:data-[closed]:opacity-0'
                                                 )}
                                             >
-                                                {filteredPeople.map((person) => (
+                                                {filteredType.map((type, index) => (
                                                     <ComboboxOption
-                                                        key={person.id}
-                                                        value={person}
+                                                        key={index}
+                                                        value={type}
                                                         className="group flex cursor-default items-center gap-2 rounded-lg py-1.5 px-3 select-none data-[focus]:bg-white/10"
                                                     >
                                                         <CheckIcon className="invisible size-4 fill-white group-data-[selected]:visible" />
-                                                        <div className="text-sm/6 text-black">{person.title}</div>
+                                                        <div className="text-sm/6 text-black">{type}</div>
                                                     </ComboboxOption>
                                                 ))}
                                             </ComboboxOptions>
@@ -218,10 +239,24 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                         <Label className="text-sm/6 font-medium text-black">Description</Label>
                                         <Textarea
                                             className={clsx(
-                                                'mt-3 block w-full resize-y rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
+                                                'block w-full resize-y rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
                                                 'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
                                             )}
                                             rows={5}
+                                            defaultValue={project.description}
+                                            placeholder={project.description}
+                                        />
+                                    </Field>
+                                    <Field>
+                                        <Label className="text-sm/6 font-medium text-black">Note</Label>
+                                        <Textarea
+                                            className={clsx(
+                                                'block w-full resize-y rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
+                                                'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                                            )}
+                                            rows={5}
+                                            defaultValue={project.note}
+                                            placeholder={project.note}
                                         />
                                     </Field>
                                     <div className='grid grid-cols-3 gap-1 mt-3'>
@@ -247,9 +282,9 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                                             <div className='text-xs'>{project.developerLead.name}</div>
                                         </Field>
                                     </div>
-                                    <Field className='mt-3'>
+                                    <Field>
                                         <Label className="text-sm/6 font-medium text-black relative">Member
-                                            <div className="cursor-pointer rounded-full absolute -top-0.5 -right-6">
+                                            <div onClick={toggleMemberDialog} className="cursor-pointer rounded-full absolute -top-0.5 -right-6">
                                                 <div className="z-10 bg-green-200 hover:bg-green-500 text-green-700 text-[12px] px-2 py-1 rounded-full flex items-center justify-center w-5 h-5 select-none opacity-50 hover:opacity-100 transition-all duration-200 ease-in-out">
                                                     +
                                                 </div>
@@ -295,6 +330,7 @@ function ProjectDialog({ project, status, isProjectDialogOpen, toggleProjectDial
                     </DialogPanel>
                 </div>
             </div>
+            
         </Dialog>
     )
 }

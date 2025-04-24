@@ -4,16 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Project, Status } from '../type';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Menu, MenuButton, MenuItem, MenuItems, Button, Dialog, DialogPanel, DialogTitle, Field, Input, Label, Select, Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption, Textarea, Fieldset, Legend } from "@headlessui/react";
-import clsx from 'clsx';
-import { CheckIcon, ChevronDownIcon, User } from 'lucide-react';
-import { getStatusData } from '../Api';
 
 
 interface cardProps {
     project: Project;
     deleteProject: (id: string) => void;
     setActiveProject:(project: Project) => void;
+    toggleProjectMemberDialog:() => void;
     toggleProjectDialog: () => void;
 }
 
@@ -25,7 +22,7 @@ const people = [
     { id: '5', title: 'Devon Webb' },
 ]
 
-export default function Card({ project, setActiveProject, toggleProjectDialog ,deleteProject }: cardProps) {
+export default function Card({ project, setActiveProject, toggleProjectMemberDialog, toggleProjectDialog ,deleteProject }: cardProps) {
     const [mouseIsOver, setMouseIsOver] = useState(false);
 
     const {
@@ -52,10 +49,15 @@ export default function Card({ project, setActiveProject, toggleProjectDialog ,d
 
 
     function toggleDialog() {
-        console.log('active project: ',project);
-        toggleProjectDialog()
         setActiveProject(project)
+        toggleProjectDialog()
     }
+
+    function toggleMemberDialog(e: React.MouseEvent<HTMLDivElement>) {
+            e.stopPropagation();
+            setActiveProject(project)
+            toggleProjectMemberDialog();
+        }
 
     const daysPassed = Math.floor((new Date().getTime() - new Date(project.createdAt).getTime()) / (1000 * 60 * 60 * 24));
 
@@ -103,8 +105,7 @@ export default function Card({ project, setActiveProject, toggleProjectDialog ,d
             </div>
             <div className='absolute left-1/2 bottom-3 -translate-x-3'>
                 <div className="flex justify-center items-center w-full relative">
-                    <div onClick={()=>{console.log('add user');
-                            }}  className="cursor-pointer rounded-full">
+                    <div onClick={(e)=>toggleMemberDialog(e)}  className="cursor-pointer rounded-full">
                         <div className="z-10 bg-green-200 hover:bg-green-500 text-green-700 text-[12px] px-2 py-1 rounded-full flex items-center justify-center w-5 h-5 select-none opacity-50 hover:opacity-100 transition-all duration-200 ease-in-out">
                             +
                         </div>

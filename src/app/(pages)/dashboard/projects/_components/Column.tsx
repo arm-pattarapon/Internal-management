@@ -16,6 +16,7 @@ interface Column {
     deleteColumn: (id: string) => void;
     setStatus:(id: string, status:string)=> void;
     setActiveProject:(project:Project) => void;
+    toggleMemberDialog:() => void;
     toggleProjectDialog:() => void;
     projects: Project[];
 
@@ -26,7 +27,7 @@ type Inputs = {
     status: string
 }
 
-export default function Column({ projects, deleteProject, deleteColumn, setStatus, setActiveProject, toggleProjectDialog, ...column }: Column) {
+export default function Column({ projects, deleteProject, deleteColumn, setStatus, setActiveProject, toggleMemberDialog, toggleProjectDialog, ...column }: Column) {
     const projectIds = useMemo(() => {
         return projects.map(project => project._id)
     }, [projects])
@@ -179,6 +180,7 @@ export default function Column({ projects, deleteProject, deleteColumn, setStatu
                         project={project}
                         deleteProject={deleteProject}
                         toggleProjectDialog={toggleProjectDialog}
+                        toggleProjectMemberDialog={toggleMemberDialog}
                         setActiveProject={setActiveProject}
                         />
                     ))}
