@@ -2,14 +2,17 @@
 import React from "react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { enUS } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
+import DatePicker, { registerLocale } from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectTrigger,
@@ -17,17 +20,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+
+registerLocale("en", enUS);
 
 export default function NewProjectsPage() {
   const [startDate, setStartDate] = React.useState(new Date());
   const [endDate, setEndDate] = React.useState(new Date());
-  const [startDateOpen, setStartDateOpen] = React.useState(false);
-  const [endDateOpen, setEndDateOpen] = React.useState(false);
 
   return (
     <div className="p-10 max-w-5xl mx-auto bg-white shadow-md rounded-md border border-gray-200">
@@ -44,54 +42,32 @@ export default function NewProjectsPage() {
 
         <div className="space-y-2">
           <Label className="text-base font-semibold">Start Date</Label>
-          <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal rounded-md"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(startDate, "dd/MM/yyyy")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={(date) => {
-                  setStartDate(date || new Date());
-                  setStartDateOpen(false);
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-3 text-gray-500 h-4 w-4" />
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date || new Date())}
+              dateFormat="dd/MM/yyyy"
+              locale="en"
+              className="w-full border rounded-md pl-9 pr-3 py-2"
+              calendarStartDay={1}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <Label className="text-base font-semibold">End Date</Label>
-          <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal rounded-md"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(endDate, "dd/MM/yyyy")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={(date) => {
-                  setEndDate(date || new Date());
-                  setEndDateOpen(false);
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-3 text-gray-500 h-4 w-4" />
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date || new Date())}
+              dateFormat="dd/MM/yyyy"
+              locale="en"
+              className="w-full border rounded-md pl-9 pr-3 py-2"
+              calendarStartDay={1}
+            />
+          </div>
         </div>
       </div>
 
@@ -156,8 +132,6 @@ export default function NewProjectsPage() {
           </CardContent>
         </Card>
       </div>
-
-
 
       <div className="flex justify-end gap-4">
         <Link href="./">
