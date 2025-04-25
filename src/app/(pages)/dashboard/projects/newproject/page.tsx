@@ -24,20 +24,72 @@ import {
 registerLocale("en", enUS);
 
 export default function NewProjectsPage() {
+  const [title, setTitle] = React.useState("");
+  const [type, setType] = React.useState("");
+  const [description, setDescription] = React.useState("");
   const [startDate, setStartDate] = React.useState(new Date());
   const [endDate, setEndDate] = React.useState(new Date());
 
+  const [pm, setPM] = React.useState("");
+  const [ba, setBA] = React.useState("");
+  const [dev, setDEV] = React.useState("");
+
+  const handleSubmit = async () => {
+    const data = [
+      {
+        name: title,
+        type: type,
+        description: description,
+        note: "test", // หรือให้ผู้ใช้กรอกก็ได้
+        statusId: "680765f9f20e6af89664fbee", // สมมุติว่าเป็น default status
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        projectManager: pm,
+        businessanalystLead: ba,
+        developerLead: dev,
+      },
+    ];
+  
+    try {
+      const res = await fetch("/projects/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+  
+      if (!res.ok) throw new Error("Failed to submit");
+  
+      const result = await res.json();
+      console.log("Success:", result);
+      alert("Project created successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong.");
+    }
+  };
+  
+
   return (
     <div className="p-10 max-w-5xl mx-auto bg-white shadow-md rounded-md border border-gray-200">
+      {/* Grid of Inputs */}
       <div className="grid grid-cols-4 gap-8 mb-6">
         <div className="space-y-2">
           <Label className="text-base font-semibold">Project Title</Label>
-          <Input placeholder="ThaiOil" className="rounded-md" />
+          <Input
+            placeholder="ThaiOil"
+            className="rounded-md"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
-
         <div className="space-y-2">
           <Label className="text-base font-semibold">Project Type</Label>
-          <Input placeholder="Full-custom" className="rounded-md" />
+          <Input
+            placeholder="Full-custom"
+            className="rounded-md"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          />
         </div>
 
         <div className="space-y-2">
@@ -77,6 +129,8 @@ export default function NewProjectsPage() {
           placeholder="Lorem Ipsum is simply dummy text..."
           className="mt-2 rounded-md"
           rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </div>
 
@@ -87,11 +141,10 @@ export default function NewProjectsPage() {
             <div>
               <Label className="text-sm font-medium">Team Lead</Label>
             </div>
-
             <div className="grid grid-cols-3 gap-4">
               <div className="text-sm text-muted-foreground space-y-1">
                 <Label className="text-sm font-medium">PM.</Label>
-                <Select>
+                <Select onValueChange={setPM}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select PM" />
                   </SelectTrigger>
@@ -104,7 +157,7 @@ export default function NewProjectsPage() {
               </div>
               <div className="text-sm text-muted-foreground space-y-1">
                 <Label className="text-sm font-medium">BA.</Label>
-                <Select>
+                <Select onValueChange={setBA}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select BA" />
                   </SelectTrigger>
@@ -117,7 +170,7 @@ export default function NewProjectsPage() {
               </div>
               <div className="text-sm text-muted-foreground space-y-1">
                 <Label className="text-sm font-medium">DEV.</Label>
-                <Select>
+                <Select onValueChange={setDEV}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select DEV" />
                   </SelectTrigger>
@@ -139,7 +192,9 @@ export default function NewProjectsPage() {
             cancel
           </Button>
         </Link>
-        <Button className="bg-blue-600 hover:bg-blue-700">Create</Button>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSubmit}>
+          Create
+        </Button>
       </div>
     </div>
   );
