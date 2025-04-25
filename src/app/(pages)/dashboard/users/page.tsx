@@ -1,8 +1,12 @@
-"use client"
-export default function usersPage(){
+// app/users/timestamp/page.tsx
+"use client";
 
+import CheckPage from "./timestamp/dailycheck";
 
-    return (
-        <p>users</p>
-    )
+export default function Page() {
+  return (
+    <main className="p-6">
+      <CheckPage />
+    </main>
+  );
 }
