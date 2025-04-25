@@ -7,6 +7,7 @@ import {
   PencilSquareIcon,
 } from "@heroicons/react/24/solid";
 
+// Format: 25 APR 2025, 16:26:58
 function formatDate(date: Date): string {
   const day = date.getDate().toString().padStart(2, "0");
   const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase();
@@ -43,8 +44,8 @@ export default function CheckPage() {
 
   return (
     <div className="min-h-screen flex justify-center pt-10 p-6 font-sans">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg max-w-md w-full space-y-6 max-h-[450px] ">
-        {/* Card Title */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg max-w-md w-full space-y-6 max-h-[450px]">
+        {/* Title */}
         <h2 className="text-xl font-bold text-center text-gray-800 dark:text-white">
           Daily Check In/Out
         </h2>
@@ -105,9 +106,8 @@ export default function CheckPage() {
         {/* Current Time */}
         <div className="text-gray-700 dark:text-gray-300">
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            {/* ⏰ Icon */}
             <svg
-              className="w-6 h-6 text-gray-800 dark:text-white"
+              className="w-5 h-5 text-gray-700 dark:text-white"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -122,15 +122,14 @@ export default function CheckPage() {
             </svg>
             Current Time
           </h3>
-          <p className="pl-8">{formatDate(currentTime)}</p>
+          <p className="pl-8 text-sm">{formatDate(currentTime)}</p>
         </div>
 
         {/* Time Stamp */}
         <div className="text-gray-700 dark:text-gray-300">
           <h3 className="text-lg font-semibold mt-2 flex items-center gap-2">
-            {/* 🕑 Icon */}
             <svg
-              className="w-6 h-6 text-gray-800 dark:text-white"
+              className="w-5 h-5 text-gray-700 dark:text-white"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -163,7 +162,7 @@ export default function CheckPage() {
             htmlFor="remark"
             className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
           >
-            <PencilSquareIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <PencilSquareIcon className="w-5 h-5 text-gray-700 dark:text-white" />
             Remark
           </label>
           <textarea
