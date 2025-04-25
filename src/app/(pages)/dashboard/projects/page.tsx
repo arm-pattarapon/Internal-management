@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -15,51 +16,55 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import {
+  arrayMove,
+  horizontalListSortingStrategy,
+  SortableContext,
+} from "@dnd-kit/sortable";
 import Card from "./_components/Card";
-import { SubmitHandler, useForm } from "react-hook-form";
-import clsx from "clsx";
-import { createStatus, deleteStatus, getCardData, getStatusData, updateProjectStatus, updateStatus } from "./Api";
+
+import {
+  deleteStatus,
+  getCardData,
+  getStatusData,
+  updateProjectStatus,
+  updateStatus,
+} from "./Api";
 import ProjectDialog from "./_components/ProjectDialog/ProjectDialog";
 import MemberDialog from "./_components/MemberDialog";
 import SearchBox from "./_components/SearchBox";
 import StatusDialog from "./_components/StatusDialog";
-
-
-
 
 export default function projectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [columns, setColumns] = useState<Status[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [activeColumn, setActiveColumn] = useState<Status | null>(null);
-  const [projectTypes , setProjectTypes] = useState<string[]>([])
+  const [projectTypes, setProjectTypes] = useState<string[]>([]);
 
   const [isMemberDialogOpen, setIsMemberDialogOpen] = useState(false);
-  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
-  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
 
-  const [action, setAction] = useState('')
-  
+  const [action, setAction] = useState("");
+
   const statusIds = useMemo(() => {
-    return columns.map(columns => columns._id)
-  }, [columns])
+    return columns.map((columns) => columns._id);
+  }, [columns]);
 
-  function toggleStatusDialog(action: string, status: Status|null) {
+  function toggleStatusDialog(action: string, status: Status | null) {
     setActiveColumn(status);
-    setAction(action)
-    setIsStatusDialogOpen(!isStatusDialogOpen)
-    
+    setAction(action);
+    setIsStatusDialogOpen(!isStatusDialogOpen);
   }
 
-  function toggleProjectDialog(){
-    setIsProjectDialogOpen(prev => !prev)
+  function toggleProjectDialog() {
+    setIsProjectDialogOpen((prev) => !prev);
   }
 
   function toggleMemberDialog() {
-    setIsMemberDialogOpen(prev=>!prev)
+    setIsMemberDialogOpen((prev) => !prev);
   }
-
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -75,9 +80,9 @@ export default function projectsPage() {
   }
 
   function deleteColumn(id: string) {
-    const newColumn = columns.filter((column) => column._id !== id)
-    setColumns(newColumn)
-    deleteStatus(id)
+    const newColumn = columns.filter((column) => column._id !== id);
+    setColumns(newColumn);
+    deleteStatus(id);
   }
 
   function setStatus(id: string, status: string) {
@@ -86,15 +91,15 @@ export default function projectsPage() {
         column._id === id ? { ...column, title: status } : column
       )
     );
-    updateStatus(id,status);
+    updateStatus(id, status);
   }
 
   function onDragStart(event: DragStartEvent) {
-    setActiveColumn(null)
-    setActiveProject(null)
+    setActiveColumn(null);
+    setActiveProject(null);
     console.log("draging :", event.active);
-    document.body.style.setProperty('cursor', 'grabbing', 'important');
-    const type = event.active.data.current?.type
+    document.body.style.setProperty("cursor", "grabbing", "important");
+    const type = event.active.data.current?.type;
 
     if (type === "Project") {
       setActiveProject(event.active.data.current?.project);
@@ -104,7 +109,7 @@ export default function projectsPage() {
   }
 
   function onDragEnd(event: DragEndEvent) {
-    document.body.style.cursor = 'default';
+    document.body.style.cursor = "default";
     const { active, over } = event;
     // console.log("project after move: ", projects);
     if (!over) return;
@@ -113,10 +118,10 @@ export default function projectsPage() {
     const overId = over.id;
 
     if (activeId === overId) return;
-    console.log('active', active);
-    console.log('over', over);
+    console.log("active", active);
+    console.log("over", over);
 
-    const type = active.data.current?.type
+    const type = active.data.current?.type;
     if (type === "Column") {
       setColumns((columns) => {
         const activeIndex = columns.findIndex(
@@ -127,8 +132,8 @@ export default function projectsPage() {
         return arrayMove(columns, activeIndex, overIndex);
       });
     }
-    setActiveColumn(null)
-    setActiveProject(null)
+    setActiveColumn(null);
+    setActiveProject(null);
   }
 
   function onDragOver(event: DragOverEvent) {
@@ -145,12 +150,15 @@ export default function projectsPage() {
     if (!isProjectActive) return;
 
     const activeProjectstatusId = active.data.current?.project.statusId;
-    const overstatusId = over.data.current?.column?._id || over.data.current?.project?.statusId;
+    const overstatusId =
+      over.data.current?.column?._id || over.data.current?.project?.statusId;
 
     if (activeProjectstatusId === overstatusId) return;
 
     setProjects((projects) => {
-      const activeProjectIndex = projects.findIndex((project) => project._id === activeId);
+      const activeProjectIndex = projects.findIndex(
+        (project) => project._id === activeId
+      );
       if (activeProjectIndex === -1) return projects;
 
       const updatedProjects = [...projects];
@@ -161,27 +169,29 @@ export default function projectsPage() {
 
       return updatedProjects;
     });
-    console.log('activeProjectId: ',activeId ,'overstatusId: ',overstatusId);
-    
-    updateProjectStatus(String(activeId),overstatusId);
+    console.log("activeProjectId: ", activeId, "overstatusId: ", overstatusId);
+
+    updateProjectStatus(String(activeId), overstatusId);
   }
 
   useEffect(() => {
-      async function fetchInitialData() {
-        try {
-          const [status, card] = await Promise.all([getStatusData(), getCardData()]);
-          setColumns(status);
-          setProjects(card);
-          const projectType = card.map(({ type }) => type);
-          setProjectTypes(projectType);
-          console.log('project types:', projectTypes);
-        } catch (error) {
-          console.error('Error fetching initial data:', error);
-        }
+    async function fetchInitialData() {
+      try {
+        const [status, card] = await Promise.all([
+          getStatusData(),
+          getCardData(),
+        ]);
+        setColumns(status);
+        setProjects(card);
+        const projectType = card.map(({ type }) => type);
+        setProjectTypes(projectType);
+        console.log("project types:", projectTypes);
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
       }
+    }
 
-      fetchInitialData();
-
+    fetchInitialData();
   }, []);
 
   return (
@@ -201,7 +211,7 @@ export default function projectsPage() {
           <hr className="border-1 rounded text-gray-300 mt-5 mb-3" />
 
           <div className="grid grid-cols-3 gap-5 mb-3 ">
-            <SearchBox placeholder="Search Projects"/>
+            <SearchBox placeholder="Search Projects" />
             <div className="col-span-2 flex space-x-5">
               <div className="w-50">
                 <label
@@ -224,7 +234,8 @@ export default function projectsPage() {
               >
                 + Project
               </Link>
-              <div onClick={()=>toggleStatusDialog('New',null)}
+              <div
+                onClick={() => toggleStatusDialog("New", null)}
                 className="inline-flex items-center gap-2 rounded-md bg-blue-400 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none hover:bg-blue-700 focus:outline-1 focus:outline-white open:bg-gray-700 hover:cursor-pointer"
               >
                 + Status
@@ -236,7 +247,8 @@ export default function projectsPage() {
             {/* column kanban */}
             <SortableContext
               strategy={horizontalListSortingStrategy}
-              items={statusIds}>
+              items={statusIds}
+            >
               {columns.map((column) => (
                 <Column
                   key={column._id}
@@ -255,7 +267,6 @@ export default function projectsPage() {
                 />
               ))}
             </SortableContext>
-
           </div>
         </div>
 
@@ -266,7 +277,7 @@ export default function projectsPage() {
               deleteProject={() => ({})}
               setActiveProject={setActiveProject}
               toggleProjectMemberDialog={toggleMemberDialog}
-              toggleProjectDialog={()=>({})}
+              toggleProjectDialog={() => ({})}
             />
           )}
           {activeColumn && (
@@ -279,30 +290,39 @@ export default function projectsPage() {
               deleteColumn={() => ({})}
               deleteProject={() => ({})}
               setStatus={() => ({})}
-              setActiveProject={()=> ({})}
-              toggleProjectDialog={()=>({})}
-              toggleMemberDialog={()=>({})}
-              toggleStatusDialog={()=>({})}
-            />)
-          }
+              setActiveProject={() => ({})}
+              toggleProjectDialog={() => ({})}
+              toggleMemberDialog={() => ({})}
+              toggleStatusDialog={() => ({})}
+            />
+          )}
         </DragOverlay>
       </DndContext>
-      
 
       {activeProject && isProjectDialogOpen && (
-        <ProjectDialog 
-          project={activeProject} 
+        <ProjectDialog
+          project={activeProject}
           status={columns}
           type={projectTypes}
-          isProjectDialogOpen={isProjectDialogOpen} 
-          toggleProjectDialog={toggleProjectDialog} 
+          isProjectDialogOpen={isProjectDialogOpen}
+          toggleProjectDialog={toggleProjectDialog}
           toggleMemberDialog={toggleMemberDialog}
-          setActiveProject={setActiveProject} />
+          setActiveProject={setActiveProject}
+        />
       )}
-      
-      <MemberDialog projectMember={activeProject?.users} isOpen={isMemberDialogOpen} toggleMemberDialog={toggleMemberDialog}/>
-      <StatusDialog isDialogOpen={isStatusDialogOpen} action={action} setColumns={setColumns} toggleStatusDialog={toggleStatusDialog} activeColumn={activeColumn??null} />
+
+      <MemberDialog
+        projectMember={activeProject?.users}
+        isOpen={isMemberDialogOpen}
+        toggleMemberDialog={toggleMemberDialog}
+      />
+      <StatusDialog
+        isDialogOpen={isStatusDialogOpen}
+        action={action}
+        setColumns={setColumns}
+        toggleStatusDialog={toggleStatusDialog}
+        activeColumn={activeColumn ?? null}
+      />
     </div>
   );
 }
-
