@@ -1,11 +1,15 @@
 "use client";
 import React from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectTrigger,
@@ -18,13 +22,12 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import Link from "next/link";
 
 export default function NewProjectsPage() {
   const [startDate, setStartDate] = React.useState(new Date());
   const [endDate, setEndDate] = React.useState(new Date());
+  const [startDateOpen, setStartDateOpen] = React.useState(false);
+  const [endDateOpen, setEndDateOpen] = React.useState(false);
 
   return (
     <div className="p-10 max-w-5xl mx-auto bg-white shadow-md rounded-md border border-gray-200">
@@ -33,13 +36,15 @@ export default function NewProjectsPage() {
           <Label className="text-base font-semibold">Project Title</Label>
           <Input placeholder="ThaiOil" className="rounded-md" />
         </div>
+
         <div className="space-y-2">
           <Label className="text-base font-semibold">Project Type</Label>
           <Input placeholder="Full-custom" className="rounded-md" />
         </div>
+
         <div className="space-y-2">
           <Label className="text-base font-semibold">Start Date</Label>
-          <Popover>
+          <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -53,15 +58,19 @@ export default function NewProjectsPage() {
               <Calendar
                 mode="single"
                 selected={startDate}
-                onSelect={setStartDate}
+                onSelect={(date) => {
+                  setStartDate(date || new Date());
+                  setStartDateOpen(false);
+                }}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
         </div>
+
         <div className="space-y-2">
           <Label className="text-base font-semibold">End Date</Label>
-          <Popover>
+          <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -75,7 +84,10 @@ export default function NewProjectsPage() {
               <Calendar
                 mode="single"
                 selected={endDate}
-                onSelect={setEndDate}
+                onSelect={(date) => {
+                  setEndDate(date || new Date());
+                  setEndDateOpen(false);
+                }}
                 initialFocus
               />
             </PopoverContent>
@@ -98,29 +110,54 @@ export default function NewProjectsPage() {
           <CardContent className="p-4 space-y-4">
             <div>
               <Label className="text-sm font-medium">Team Lead</Label>
-              <Select>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select Team Lead" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="black">Mr. Blacksnow</SelectItem>
-                  <SelectItem value="white">Mr. Whitesnow</SelectItem>
-                  <SelectItem value="green">Mr. Greensnow</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
-            <div className="text-sm text-muted-foreground">
-              PM <em>Mr. Blacksnow</em>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              BA <em>Mr. Whitesnow</em>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              DEV <em>Mr. Greensnow</em>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-sm text-muted-foreground space-y-1">
+                <Label className="text-sm font-medium">PM.</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select PM" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="black">Mr. Blacksnow</SelectItem>
+                    <SelectItem value="white">Mr. Whitesnow</SelectItem>
+                    <SelectItem value="green">Mr. Greensnow</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <Label className="text-sm font-medium">BA.</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select BA" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="black">Mr. Blacksnow</SelectItem>
+                    <SelectItem value="white">Mr. Whitesnow</SelectItem>
+                    <SelectItem value="green">Mr. Greensnow</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <Label className="text-sm font-medium">DEV.</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select DEV" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="black">Mr. Blacksnow</SelectItem>
+                    <SelectItem value="white">Mr. Whitesnow</SelectItem>
+                    <SelectItem value="green">Mr. Greensnow</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+
 
       <div className="flex justify-end gap-4">
         <Link href="./">
