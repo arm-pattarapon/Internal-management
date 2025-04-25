@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
@@ -20,6 +19,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+
+import { getAllUsers } from "../Api";
 
 registerLocale("en", enUS);
 
@@ -49,16 +50,16 @@ export default function NewProjectsPage() {
         developerLead: dev,
       },
     ];
-  
+
     try {
       const res = await fetch("/projects/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-  
+
       if (!res.ok) throw new Error("Failed to submit");
-  
+
       const result = await res.json();
       console.log("Success:", result);
       alert("Project created successfully!");
@@ -67,7 +68,6 @@ export default function NewProjectsPage() {
       alert("Something went wrong.");
     }
   };
-  
 
   return (
     <div className="p-10 max-w-5xl mx-auto bg-white shadow-md rounded-md border border-gray-200">
@@ -192,7 +192,10 @@ export default function NewProjectsPage() {
             cancel
           </Button>
         </Link>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSubmit}>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={handleSubmit}
+        >
           Create
         </Button>
       </div>
