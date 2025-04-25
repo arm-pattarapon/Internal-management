@@ -185,7 +185,6 @@ export default function projectsPage() {
         setProjects(card);
         const projectType = card.map(({ type }) => type);
         setProjectTypes(projectType);
-        console.log("project types:", projectTypes);
       } catch (error) {
         console.error("Error fetching initial data:", error);
       }
@@ -275,8 +274,8 @@ export default function projectsPage() {
             <Card
               project={activeProject}
               deleteProject={() => ({})}
-              setActiveProject={setActiveProject}
-              toggleProjectMemberDialog={toggleMemberDialog}
+              setActiveProject={()=>({})}
+              toggleProjectMemberDialog={()=>({})}
               toggleProjectDialog={() => ({})}
             />
           )}

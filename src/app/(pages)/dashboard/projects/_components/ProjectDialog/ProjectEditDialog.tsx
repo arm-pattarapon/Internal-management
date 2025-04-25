@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
-import {Button, Field, Input, Label, Select, Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption, Textarea, Fieldset, Legend } from "@headlessui/react";
+import React, { useEffect, useState } from 'react'
+import { Button, Field, Input, Label, Select, Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption, Textarea, Fieldset, Legend } from "@headlessui/react";
 import clsx from 'clsx';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
-import { Project, Status } from '../../type';
-import { useForm } from 'react-hook-form';
+import { Project, Status, Users } from '../../type';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { DayPicker } from 'react-day-picker';
+import { getAllUsers } from '../../Api';
 
 interface props {
     project: Project;
@@ -15,21 +17,24 @@ interface props {
 
 type Inputs = {
     _id: string,
+    name: string,
     status: string,
     type: string,
     description: string,
     note: string,
     projectManager: string,
     businessanalystLead: string,
-    developerLead: string
+    developerLead: string,
+    dueDate: Date,
 }
 
-function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEditMode}:props) {
+function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEditMode }: props) {
     const [queryType, setQueryType] = useState('')
     const [selectedStatus, setSelectedStatus] = useState<Status>(status.find(s => s._id === project.statusId) || status[0])
     const [selectedType, setSelectedType] = useState<string | null>(project.type)
+    const [selectedDueDate, setSelectedDueDate] = useState<Date>();
+    const [users, setUsers] = useState<Users[]>([]);
 
-  
 
     const filteredType =
         queryType === ''
@@ -45,10 +50,21 @@ function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEdi
         formState: { errors },
     } = useForm<Inputs>();
 
+    const submitForm: SubmitHandler<Inputs> = async (data:Inputs) => {
+        console.log('data: ',data);
+        
+    }
 
+    useEffect(() => {
+        const fetchUsers = async () => {
+          const Users = await getAllUsers();
+          setUsers(Users);
+        };
+        fetchUsers();
+      }, []);
 
     return (
-        <form>
+        <form onSubmit={handleSubmit(submitForm)}>
             <Fieldset className='flex flex-col space-y-3'>
                 <Legend className="text-lg font-bold">Project details</Legend>
                 <Field>
@@ -60,6 +76,7 @@ function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEdi
                         )}
                         placeholder={project.name}
                         defaultValue={project.name}
+                        {...register("name")}
                     />
                 </Field>
                 <Field>
@@ -71,11 +88,13 @@ function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEdi
                                 'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
                             )}
                             value={selectedStatus._id}
-                            onChange={(e) => {
-                                const selectedStatus = e.target.value;
-                                const newSelectedStatus = status.find(s => s._id === selectedStatus)
-                                setSelectedStatus(newSelectedStatus || status[0])
-                            }}
+                            {...register('status', {
+                                onChange: (e) => {
+                                    const selectedStatus = e.target.value;
+                                    const newSelectedStatus = status.find(s => s._id === selectedStatus);
+                                    setSelectedStatus(newSelectedStatus || status[0]);
+                                },
+                            })}
                         >
                             {status.map((status, index) => (
                                 <option
@@ -100,10 +119,13 @@ function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEdi
                                     'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
                                 )}
                                 displayValue={() => selectedType || ''}
-                                onChange={(event) => {
-                                    setQueryType(event.target.value);
-                                    setSelectedType(event.target.value);
-                                }}
+                                defaultValue={selectedType || ''}
+                                {...register('type', {
+                                    onChange: (event) => {
+                                        setQueryType(event.target.value);
+                                        setSelectedType(event.target.value);
+                                    },
+                                })}
                             />
                             <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
                                 <ChevronDownIcon className="size-4 fill-white/60 group-data-[hover]:fill-white" />
@@ -141,6 +163,7 @@ function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEdi
                         rows={5}
                         defaultValue={project.description}
                         placeholder={project.description}
+                        {...register('description')}
                     />
                 </Field>
                 <Field>
@@ -153,6 +176,7 @@ function ProjectEditDialog({project, status, type, toggleMemberDialog, toggleEdi
                         rows={5}
                         defaultValue={project.note}
                         placeholder={project.note}
+                        {...register('note')}
                     />
                 </Field>
                 <div className='grid grid-cols-3 gap-1 mt-3'>
