@@ -125,26 +125,113 @@ export default function CalendarTodo() {
     setSelectedDay(null);
   };
 
+  // const exportToExcel = () => {
+  //   const data: any[][] = [["Project", ...daysInMonth.map(day => `${day}`), "Total"]];
+  //   projects.forEach((project) => {
+  //     const row: any[] = [project.name];
+  //     let total = 0;
+  //     daysInMonth.forEach((day) => {
+  //       const dateKey = `${format(currentMonth, "yyyy-MM")}-${String(day).padStart(2, "0")}`;
+  //       const val = project.hours[dateKey] || 0;
+  //       row.push(val);
+  //       total += val;
+  //     });
+  //     row.push(total);
+  //     data.push(row);
+  //   });
+
+  //   const ws = XLSX.utils.aoa_to_sheet(data);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Monthly Hours");
+  //   XLSX.writeFile(wb, `TimeTracking_${format(currentMonth, "yyyy-MM")}.xlsx`);
+  // };
+// draft 2
+  // const exportToExcel = () => {
+  //   const data: any[][] = [];
+  
+  //   // Header Row
+  //   const headerRow = ["Project", "Module", "Note"];
+  //   daysInMonth.forEach((day) => {
+  //     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+  //     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }); // e.g., Mon, Tue
+  //     const formattedDate = date.toLocaleDateString('en-GB', {
+  //       day: 'numeric',
+  //       month: 'short'
+  //     }); // e.g., 1 May
+  //     headerRow.push(`${dayName} ${formattedDate}`);
+  //   });
+  //   data.push(headerRow);
+  
+  //   // Project Rows
+  //   projects.forEach((project) => {
+  //     const row: any[] = [project.name, project.module || "", project.note || ""];
+  //     daysInMonth.forEach((day) => {
+  //       const dateKey = `${format(currentMonth, "yyyy-MM")}-${String(day).padStart(2, "0")}`;
+  //       const val = project.hours[dateKey] || 0;
+  //       row.push(val);
+  //     });
+  //     data.push(row);
+  //   });
+  
+  //   // Footer: Total hours per day
+  //   const totalRow: any[] = ["Total hrs", "", ""];
+  //   daysInMonth.forEach((day) => {
+  //     const dateKey = `${format(currentMonth, "yyyy-MM")}-${String(day).padStart(2, "0")}`;
+  //     let dayTotal = 0;
+  //     projects.forEach((project) => {
+  //       dayTotal += project.hours[dateKey] || 0;
+  //     });
+  //     totalRow.push(dayTotal.toFixed(2));
+  //   });
+  //   data.push(totalRow);
+  
+  //   // Generate Excel file
+  //   const ws = XLSX.utils.aoa_to_sheet(data);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Monthly Timesheet");
+  //   XLSX.writeFile(wb, `Timesheet_${format(currentMonth, "yyyy-MM")}.xlsx`);
+  // };
+  
   const exportToExcel = () => {
-    const data: any[][] = [["Project", ...daysInMonth.map(day => `${day}`), "Total"]];
-    projects.forEach((project) => {
-      const row: any[] = [project.name];
-      let total = 0;
-      daysInMonth.forEach((day) => {
+    const data: any[][] = [];
+  
+    // Header row
+    const headerRow = ["day/project", ...projects.map(p => p.name), "Module", "Note", "Total hrs"];
+    data.push(headerRow);
+  
+    // Data rows for each day
+    daysInMonth.forEach((day) => {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue, etc.
+      const formattedDate = date.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short'
+      }); // 1 Apr, 2 Apr, etc.
+      const displayDate = `${dayName} ${formattedDate}`; // e.g., Mon 1 Apr
+    
+      const row: any[] = [displayDate];
+      let totalHrs = 0;
+    
+      projects.forEach((project) => {
         const dateKey = `${format(currentMonth, "yyyy-MM")}-${String(day).padStart(2, "0")}`;
         const val = project.hours[dateKey] || 0;
+        totalHrs += val;
         row.push(val);
-        total += val;
       });
-      row.push(total);
+    
+      // Add empty Module and Note columns (can update if needed)
+      row.push("", ""); // Module, Note
+      row.push(totalHrs); // Total hrs
       data.push(row);
     });
-
+  
+    // Generate Excel file
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Monthly Hours");
-    XLSX.writeFile(wb, `TimeTracking_${format(currentMonth, "yyyy-MM")}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, "Monthly Timesheet");
+    XLSX.writeFile(wb, `Timesheet_${format(currentMonth, "yyyy-MM")}.xlsx`);
   };
+  
 
   return (
     <div className="max-w-6xl mx-auto p-4">
