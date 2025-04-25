@@ -403,8 +403,7 @@ export default function CalendarTodo() {
                       ✕
                     </button>
                   </div>
-                  <input
-                    type="text"
+                  <textarea
                     value={task.remark || ""}
                     onChange={(e) => {
                       const key = `${selectedProjectIndex}-${selectedDay}`;
@@ -412,7 +411,7 @@ export default function CalendarTodo() {
                       updated[index].remark = e.target.value;
                       setTaskDetails({ ...taskDetails, [key]: updated });
                     }}
-                    className="w-full border px-2 py-1 rounded"
+                    className="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Remark (optional)"
                   />
                 </div>
