@@ -107,49 +107,46 @@ export default function DashboardLayout({
         className={`bg-white transition-all duration-300 shadow-md h-full ${
           sidebarOpen ? "w-64" : "w-20"
         }`}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
       >
         <div className="flex flex-col justify-between h-full px-3 py-6">
           <div>
-            {/* Logo & Toggle */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-2">
-                <img src="/Ignite_logo_crop.png" className="w-10" alt="Logo" />
-                {sidebarOpen && (
-                  <span className="text-lg font-bold">Ignite Idea</span>
-                )}
-              </div>
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="text-gray-500 hover:text-blue-500"
-              >
-                {sidebarOpen ? <LuChevronLeft /> : <LuChevronRight />}
-              </button>
+            {/* Logo */}
+            <div className="flex items-center space-x-2 mb-6">
+              <img src="/Ignite_logo_crop.png" className="w-10" alt="Logo" />
+              {sidebarOpen && <span className="text-lg font-bold">Ignite Idea</span>}
             </div>
 
             {/* Menu */}
             <nav className="flex flex-col space-y-1.5">
               {navigation.map((item) => (
-                <Link
-                  href={item.href}
+                <div
                   key={item.name}
-                  onClick={() => startTransition(() => {})}
-                  className={classNames(
-                    item.curent
-                      ? "bg-blue-500 text-white shadow-sm shadow-blue-500"
-                      : "text-sm text-gray-400 hover:bg-blue-300 hover:text-white",
-                    "p-2 rounded-lg flex items-center"
-                  )}
+                  onClick={(e) => e.stopPropagation()} // ป้องกันปิด sidebar ตอนกดเมนู
                 >
-                  <item.icon className="text-lg me-2" />
-                  {sidebarOpen && <span>{item.name}</span>}
-                </Link>
+                  <Link
+                    href={item.href}
+                    className={classNames(
+                      item.curent
+                        ? "bg-blue-500 text-white shadow-sm shadow-blue-500"
+                        : "text-sm text-gray-400 hover:bg-blue-300 hover:text-white",
+                      "p-2 rounded-lg flex items-center"
+                    )}
+                  >
+                    <item.icon className="text-lg me-2" />
+                    {sidebarOpen && <span>{item.name}</span>}
+                  </Link>
+                </div>
               ))}
             </nav>
           </div>
 
           {/* Sign Out */}
           <div
-            onClick={handleSignOut}
+            onClick={(e) => {
+              e.stopPropagation(); // ป้องกัน sidebar ปิด
+              handleSignOut();
+            }}
             className="flex items-center cursor-pointer text-sm text-gray-400 hover:bg-blue-300 hover:text-white p-2 rounded-lg"
           >
             <LuLogOut className="me-2" />
