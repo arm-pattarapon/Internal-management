@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Alata } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 
-const alata = Alata({
+const roboto = Roboto({
   subsets: ["latin"],
-    weight: ["400"],
-    style: ["normal"],
+  weight: ["400", "500", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -20,10 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${alata.className} antialiased`}
-      >
-          {children}
+      <body className={`${roboto.className} antialiased`}>
+        {children}
       </body>
     </html>
   );
