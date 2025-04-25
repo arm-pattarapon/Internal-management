@@ -10,7 +10,7 @@ export type Members = {
   role: string;
 };
 
-interface LeadInterface {
+export type Lead = {
   _id: string;
   name: string;
 }
@@ -22,9 +22,9 @@ export type Project = {
   type: string;
   description: string;
   note: string;
-  projectManager: LeadInterface;
-  businessanalystLead: LeadInterface;
-  developerLead: LeadInterface;
+  projectManager: Lead;
+  businessanalystLead: Lead;
+  developerLead: Lead;
   users: Members[];
   startDate: Date | null;
   dueDate: Date | null;

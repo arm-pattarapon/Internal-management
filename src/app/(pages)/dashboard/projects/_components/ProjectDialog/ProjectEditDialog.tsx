@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Field, Input, Label, Select, Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption, Textarea, Fieldset, Legend } from "@headlessui/react";
+import { Button, Field, Input, Label, Select, Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption, Textarea, Fieldset, Legend, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import clsx from 'clsx';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
-import { Project, Status, Users } from '../../type';
+import { Lead, Project, Status, Users } from '../../type';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { DayPicker } from 'react-day-picker';
 import { getAllUsers } from '../../Api';
@@ -35,6 +35,13 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
     const [selectedDueDate, setSelectedDueDate] = useState<Date>();
     const [users, setUsers] = useState<Users[]>([]);
 
+    const [selectedPm, setSelectedPm] = useState<string>(project.projectManager._id)
+    const [selectedBa, setSelectedBa] = useState<string>(project.businessanalystLead._id)
+    const [selectedDev, setSelectedDev] = useState<string>(project.developerLead._id)
+    
+    const [queryLead, setQueryLead] = useState('')
+    const filteredLead = queryLead === '' ? users : users.filter(user => { return user.name.toLowerCase().includes(queryLead.toLowerCase()) })
+
 
     const filteredType =
         queryType === ''
@@ -50,18 +57,18 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
         formState: { errors },
     } = useForm<Inputs>();
 
-    const submitForm: SubmitHandler<Inputs> = async (data:Inputs) => {
-        console.log('data: ',data);
-        
+    const submitForm: SubmitHandler<Inputs> = async (data: Inputs) => {
+        console.log('data: ', data);
+
     }
 
     useEffect(() => {
         const fetchUsers = async () => {
-          const Users = await getAllUsers();
-          setUsers(Users);
+            const Users = await getAllUsers();
+            setUsers(Users);
         };
         fetchUsers();
-      }, []);
+    }, []);
 
     return (
         <form onSubmit={handleSubmit(submitForm)}>
@@ -180,26 +187,54 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
                     />
                 </Field>
                 <div className='grid grid-cols-3 gap-1 mt-3'>
-                    <Field className='flex flex-col items-center text-center'>
+                    <Field className='flex flex-col items-center text-center space-y-1'>
                         <Label className="text-sm/6 font-medium text-black">Project Lead</Label>
-                        <div className='w-10 h-10 rounded-full overflow-hidden'>
-                            <img className='object-cover' src="/default_user_logo.png" alt="user_picture" />
-                        </div>
-                        <div className='text-xs'>{project.projectManager.name}</div>
-                    </Field>
-                    <Field className='flex flex-col items-center text-center'>
-                        <Label className="text-sm/6 font-medium text-black">Business Analyst Lead</Label>
-                        <div className='w-10 h-10 rounded-full overflow-hidden'>
-                            <img className='object-cover' src="/default_user_logo.png" alt="user_picture" />
-                        </div>
-                        <div className='text-xs'>{project.businessanalystLead.name}</div>
-                    </Field>
-                    <Field className='flex flex-col items-center text-center'>
-                        <Label className="text-sm/6 font-medium text-black">Developer Lead</Label>
-                        <div className='w-10 h-10 rounded-full overflow-hidden'>
-                            <img className='object-cover' src="/default_user_logo.png" alt="user_picture" />
-                        </div>
-                        <div className='text-xs'>{project.developerLead.name}</div>
+                        <Combobox value={selectedPm} onChange={(value: string) => setSelectedPm(value)} onClose={() => setQueryLead('')}>
+                            <div className="relative">
+                                <ComboboxInput
+                                    className={clsx(
+                                        'w-full rounded-lg border-1 bg-white py-1.5 pr-8 pl-3 text-sm/6 text-black',
+                                        'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25'
+                                    )}
+                                    displayValue={() => users.find(user => user._id === selectedPm)?.name || project.projectManager.name}
+                                    defaultValue={project.projectManager._id}
+                                    {...register('projectManager', {
+                                        onChange: (event) => {
+                                            const value = event.target.value
+                                            setQueryLead(value)
+                                            setSelectedPm(value)
+                                        },
+                                    })}
+                                />
+                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
+                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
+                                </ComboboxButton>
+                            </div>
+
+                            <ComboboxOptions
+                                anchor="bottom"
+                                transition
+                                className={clsx(
+                                    'w-[var(--input-width)] rounded-xl z-40 border-1 bg-white p-1 [--anchor-gap:var(--spacing-1)] empty:invisible',
+                                    'transition duration-100 ease-in data-leave:data-closed:opacity-0'
+                                )}
+                            >
+                                {filteredLead.map((lead) => (
+                                    <ComboboxOption
+                                        onClick={() => {
+                                            setQueryLead('')
+                                        }}
+                                        key={lead._id}
+                                        value={lead._id}
+                                        className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
+                                    >
+                                        <CheckIcon className="invisible size-4 fill-white group-data-selected:visible" />
+                                        <div className="text-sm/6 text-black">{lead.name}</div>
+                                    </ComboboxOption>
+                                ))}
+                            </ComboboxOptions>
+                        </Combobox>
+
                     </Field>
                 </div>
                 <Field>
