@@ -7,18 +7,15 @@ import { Status } from '../type';
 
 interface props {
     isDialogOpen: boolean;
-    action: string;
-    activeColumn: Status|null;
     setColumns: React.Dispatch<React.SetStateAction<Status[]>>;
-    toggleStatusDialog: (action: string, status: Status|null) => void;
+    toggleStatusDialog: () => void;
 }
 
 type Inputs = {
-    _id: string,
     status: string
 }
 
-function StatusDialog({ isDialogOpen, action, activeColumn, setColumns , toggleStatusDialog }: props) {    
+function StatusDialog({ isDialogOpen, setColumns , toggleStatusDialog }: props) {    
     const {
         register,
         handleSubmit,
@@ -26,34 +23,25 @@ function StatusDialog({ isDialogOpen, action, activeColumn, setColumns , toggleS
         formState: { errors },
     } = useForm<Inputs>();
 
-    const submitStatus: SubmitHandler<Inputs> = async ({_id, status}) => {
-        if (action === 'New') {
-            const newStatus = await createStatus(status);
-            if(!newStatus) return;
-            const {data} = newStatus;
-    
-            setColumns((column) => {
-            const newColumn = {
-                _id: data._id,
-                title: status,
-            }
-            return [...column, newColumn]
-            })
-        }else if(action === 'Update'){
-            setColumns((columns) =>
-                columns.map((column) =>
-                column._id === _id ? { ...column, title: status } : column
-                )
-            );
-            updateStatus(_id,status);
-        }
+    const submitStatus: SubmitHandler<Inputs> = async ({status}) => {
+        const newStatus = await createStatus(status);
+        if(!newStatus) return;
+        const {data} = newStatus;
 
+        setColumns((column) => {
+        const newColumn = {
+            _id: data._id,
+            title: status,
+        }
+        return [...column, newColumn]
+        })
+    
         closeDialog()
     }
 
     function closeDialog() {
-        toggleStatusDialog('close',null)
         reset()
+        toggleStatusDialog()
     }
 
     return (
@@ -71,8 +59,6 @@ function StatusDialog({ isDialogOpen, action, activeColumn, setColumns , toggleS
                         <form onSubmit={handleSubmit(submitStatus)}>
                             <Field>
                                 <Input
-                                    defaultValue={activeColumn?.title}
-                                    placeholder={activeColumn?.title}
                                     type="text"
                                     {...register("status", { required: true })}
                                     className={clsx(
@@ -81,12 +67,6 @@ function StatusDialog({ isDialogOpen, action, activeColumn, setColumns , toggleS
                                     )}
                                 />
                                 {errors.status && <span className="text-red-400">This field is required</span>}
-                                <Input
-                                    defaultValue={activeColumn?._id}
-                                    disabled
-                                    hidden
-                                    {...register("_id",{required: action==='Update'})}
-                                />
                             </Field>
                             <div className="mt-4 space-x-3">
                                 <Button

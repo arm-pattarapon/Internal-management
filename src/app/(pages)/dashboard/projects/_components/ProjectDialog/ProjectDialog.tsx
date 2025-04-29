@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import {Dialog, DialogPanel } from "@headlessui/react";
-import { Project, Status } from '../../type';
+import { Project, Status, Users } from '../../type';
 import ProjectDetail from './ProjectDetail';
 import ProjectEditDialog from './ProjectEditDialog';
 
 
 interface props {
     project: Project;
+    users: Users[];
     status: Status[];
     type: string[];
     isProjectDialogOpen: boolean;
@@ -15,7 +16,7 @@ interface props {
     setActiveProject: (project: Project | null) => void;
 }
 
-function ProjectDialog({ project, status, type, isProjectDialogOpen, toggleMemberDialog, toggleProjectDialog, setActiveProject }: props) {
+function ProjectDialog({ project, users, status, type, isProjectDialogOpen, toggleMemberDialog, toggleProjectDialog, setActiveProject }: props) {
 
     const [editMode, setEditMode] = useState(false);
 
@@ -59,7 +60,7 @@ function ProjectDialog({ project, status, type, isProjectDialogOpen, toggleMembe
                         {!editMode ? (
                            <ProjectDetail project={project} status={status}/>
                         ) : (
-                            <ProjectEditDialog project={project} status={status} type={type} toggleMemberDialog={toggleMemberDialog} toggleEditMode={toggleEditMode}/>
+                            <ProjectEditDialog project={project} users={users} status={status} type={type} toggleMemberDialog={toggleMemberDialog} toggleEditMode={toggleEditMode}/>
                         )}
                     </DialogPanel>
                 </div>

@@ -4,11 +4,15 @@ import clsx from 'clsx';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import { Lead, Project, Status, Users } from '../../type';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { DayPicker } from 'react-day-picker';
-import { getAllUsers } from '../../Api';
+import { CalendarIcon } from "lucide-react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import Spinner from '@/app/component/spiner';
+import { updateProject } from '../../Api';
 
 interface props {
     project: Project;
+    users: Users[];
     status: Status[];
     type: string[];
     toggleMemberDialog: () => void;
@@ -18,30 +22,36 @@ interface props {
 type Inputs = {
     _id: string,
     name: string,
-    status: string,
+    statusId: string,
     type: string,
     description: string,
+    projectManager: string|null,
+    businessanalystLead: string|null,
+    developerLead: string|null,
     note: string,
-    projectManager: string,
-    businessanalystLead: string,
-    developerLead: string,
     dueDate: Date,
 }
 
-function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEditMode }: props) {
+
+
+function ProjectEditDialog({ project, users, status, type, toggleMemberDialog, toggleEditMode }: props) {
+    const [isLoad, setIsLoad] = useState(false)
     const [queryType, setQueryType] = useState('')
     const [selectedStatus, setSelectedStatus] = useState<Status>(status.find(s => s._id === project.statusId) || status[0])
     const [selectedType, setSelectedType] = useState<string | null>(project.type)
-    const [selectedDueDate, setSelectedDueDate] = useState<Date>();
-    const [users, setUsers] = useState<Users[]>([]);
 
-    const [selectedPm, setSelectedPm] = useState<string>(project.projectManager._id)
-    const [selectedBa, setSelectedBa] = useState<string>(project.businessanalystLead._id)
-    const [selectedDev, setSelectedDev] = useState<string>(project.developerLead._id)
+    const [queryLead, setQueryLead] = useState('');
+    const [selectedPM, setSelectedPM] = useState<Users | null>(users.find(user => user._id === project.projectManager._id) || null)
+    const [selectedBA, setSelectedBA] = useState<Users | null>(users.find(user => user._id === project.businessanalystLead._id) || null)
+    const [selectedDevLead, setSelectedDevLead] = useState<Users | null>(users.find(user => user._id === project.developerLead._id) || null)
+
+    const [startDate, setStartDate] = useState<Date | null>(project.startDate||null)
+    const [endDate, setEndDate] = useState<Date | null>(project.dueDate||null)
     
-    const [queryLead, setQueryLead] = useState('')
-    const filteredLead = queryLead === '' ? users : users.filter(user => { return user.name.toLowerCase().includes(queryLead.toLowerCase()) })
 
+    const filteredLead = queryLead === '' ? users : users.filter(user => {
+        return user.name.toLowerCase().includes(queryLead.toLowerCase())
+    })
 
     const filteredType =
         queryType === ''
@@ -58,44 +68,53 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
     } = useForm<Inputs>();
 
     const submitForm: SubmitHandler<Inputs> = async (data: Inputs) => {
-        console.log('data: ', data);
-
+        setIsLoad(true)
+        data._id = project._id
+        data.projectManager = selectedPM ? selectedPM._id : null
+        data.businessanalystLead = selectedBA ? selectedBA._id : null
+        data.developerLead = selectedDevLead ? selectedDevLead._id :null
+        try {
+            console.log('data :',data);
+            await updateProject(data)
+            
+        } catch (error) {
+            throw new Error("error update project: ")
+        }finally{
+            setIsLoad(false)
+            toggleMemberDialog()
+            window.location.reload();
+        }
+        
+        
     }
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-            const Users = await getAllUsers();
-            setUsers(Users);
-        };
-        fetchUsers();
-    }, []);
 
     return (
         <form onSubmit={handleSubmit(submitForm)}>
+            {isLoad && <Spinner />}
             <Fieldset className='flex flex-col space-y-3'>
                 <Legend className="text-lg font-bold">Project details</Legend>
-                <Field>
+                <Field disabled={isLoad}>
                     <Label className="text-sm/6 font-medium text-black">Project Name</Label>
                     <Input
                         className={clsx(
                             'block w-full rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
-                            'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                            'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
                         )}
                         placeholder={project.name}
                         defaultValue={project.name}
                         {...register("name")}
                     />
                 </Field>
-                <Field>
+                <Field disabled={isLoad}>
                     <Label className="text-sm/6 font-medium text-black">Project Status</Label>
                     <div className="relative">
                         <Select
                             className={clsx(
                                 'block w-full appearance-none rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
-                                'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
+                                'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25',
                             )}
                             value={selectedStatus._id}
-                            {...register('status', {
+                            {...register('statusId', {
                                 onChange: (e) => {
                                     const selectedStatus = e.target.value;
                                     const newSelectedStatus = status.find(s => s._id === selectedStatus);
@@ -116,14 +135,14 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
                         />
                     </div>
                 </Field>
-                <Field>
+                <Field disabled={isLoad}>
                     <Label className="text-sm/6 font-medium text-black">Project Type</Label>
                     <Combobox value={selectedType} onChange={(value) => setSelectedType(value)} onClose={() => setQueryType('')}>
                         <div className="relative">
                             <ComboboxInput
                                 className={clsx(
                                     'w-full rounded-lg border-1 bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-black',
-                                    'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                                    'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
                                 )}
                                 displayValue={() => selectedType || ''}
                                 defaultValue={selectedType || ''}
@@ -160,12 +179,12 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
                         </ComboboxOptions>
                     </Combobox>
                 </Field>
-                <Field>
+                <Field disabled={isLoad}>
                     <Label className="text-sm/6 font-medium text-black">Description</Label>
                     <Textarea
                         className={clsx(
                             'block w-full resize-y rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
-                            'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                            'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
                         )}
                         rows={5}
                         defaultValue={project.description}
@@ -173,12 +192,12 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
                         {...register('description')}
                     />
                 </Field>
-                <Field>
+                <Field disabled={isLoad}>
                     <Label className="text-sm/6 font-medium text-black">Note</Label>
                     <Textarea
                         className={clsx(
                             'block w-full resize-y rounded-lg border-1 bg-white/5 py-1.5 px-3 text-sm/6 text-black',
-                            'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                            'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
                         )}
                         rows={5}
                         defaultValue={project.note}
@@ -186,25 +205,44 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
                         {...register('note')}
                     />
                 </Field>
+                <Field>
+                    <div className="grid grid-cols">
+                        <div className='relative flex flex-col space-y-1'>
+                            <CalendarIcon className="absolute left-3 top-10 text-gray-500 h-4 w-4" />
+                            
+                            <Label className="text-sm/6 font-medium text-black">End Date</Label>
+                            <DatePicker
+                                selected={endDate}
+                                dateFormat="dd/MM/yyyy"
+                                locale="en"
+                                className="w-full border rounded-md pl-9 pr-3 py-2 z-50"
+                                calendarStartDay={1}
+                                onChange={(date) => {
+                                    setEndDate(date);
+                                    if (date) {
+                                        const event = { target: { name: 'dueDate', value: date } };
+                                        register('dueDate').onChange(event);
+                                    }
+                                }}
+                                disabled={isLoad}
+                            />
+                        </div>
+                    </div>
+                </Field>
                 <div className='grid grid-cols-3 gap-1 mt-3'>
-                    <Field className='flex flex-col items-center text-center space-y-1'>
+                    <Field disabled={isLoad} className='flex flex-col items-center text-center space-y-1'>
                         <Label className="text-sm/6 font-medium text-black">Project Lead</Label>
-                        <Combobox value={selectedPm} onChange={(value: string) => setSelectedPm(value)} onClose={() => setQueryLead('')}>
+                        <Combobox value={selectedPM} onChange={(value) => setSelectedPM(value)} onClose={() => setQueryLead('')}>
                             <div className="relative">
                                 <ComboboxInput
                                     className={clsx(
-                                        'w-full rounded-lg border-1 bg-white py-1.5 pr-8 pl-3 text-sm/6 text-black',
-                                        'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25'
+                                        'w-full rounded-lg border-1 bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-black',
+                                        'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
                                     )}
-                                    displayValue={() => users.find(user => user._id === selectedPm)?.name || project.projectManager.name}
-                                    defaultValue={project.projectManager._id}
-                                    {...register('projectManager', {
-                                        onChange: (event) => {
-                                            const value = event.target.value
-                                            setQueryLead(value)
-                                            setSelectedPm(value)
-                                        },
-                                    })}
+                                    displayValue={(user: Users | null) => user?.name || ''}
+                                    onChange={(e)=>{
+                                        setQueryLead(e.target.value)
+                                    }}
                                 />
                                 <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
                                     <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
@@ -215,29 +253,105 @@ function ProjectEditDialog({ project, status, type, toggleMemberDialog, toggleEd
                                 anchor="bottom"
                                 transition
                                 className={clsx(
-                                    'w-[var(--input-width)] rounded-xl z-40 border-1 bg-white p-1 [--anchor-gap:var(--spacing-1)] empty:invisible',
+                                    'w-(--input-width) rounded-xl border-1 bg-white z-50 p-1 [--anchor-gap:--spacing(1)] empty:invisible',
                                     'transition duration-100 ease-in data-leave:data-closed:opacity-0'
                                 )}
                             >
-                                {filteredLead.map((lead) => (
+                                {filteredLead.map((user) => (
                                     <ComboboxOption
-                                        onClick={() => {
-                                            setQueryLead('')
-                                        }}
-                                        key={lead._id}
-                                        value={lead._id}
+                                        key={user._id}
+                                        value={user}
                                         className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
                                     >
                                         <CheckIcon className="invisible size-4 fill-white group-data-selected:visible" />
-                                        <div className="text-sm/6 text-black">{lead.name}</div>
+                                        <div className="text-sm/6 text-black">{user.name}</div>
                                     </ComboboxOption>
                                 ))}
                             </ComboboxOptions>
                         </Combobox>
+                    </Field>
+                    <Field disabled={isLoad} className='flex flex-col items-center text-center space-y-1'>
+                        <Label className="text-sm/6 font-medium text-black">Business Analyst Lead</Label>
+                        <Combobox value={selectedBA} onChange={(value) => setSelectedBA(value)} onClose={() => setQueryLead('')}>
+                            <div className="relative">
+                                <ComboboxInput
+                                    className={clsx(
+                                        'w-full rounded-lg border-1 bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-black',
+                                        'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
+                                    )}
+                                    displayValue={(user: Users | null) => user?.name || ''}
+                                    onChange={(e)=>{
+                                        setQueryLead(e.target.value)
+                                    }}
+                                />
+                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
+                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
+                                </ComboboxButton>
+                            </div>
 
+                            <ComboboxOptions
+                                anchor="bottom"
+                                transition
+                                className={clsx(
+                                    'w-(--input-width) rounded-xl border-1 bg-white z-50 p-1 [--anchor-gap:--spacing(1)] empty:invisible',
+                                    'transition duration-100 ease-in data-leave:data-closed:opacity-0'
+                                )}
+                            >
+                                {filteredLead.map((user) => (
+                                    <ComboboxOption
+                                        key={user._id}
+                                        value={user}
+                                        className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
+                                    >
+                                        <CheckIcon className="invisible size-4 fill-white group-data-selected:visible" />
+                                        <div className="text-sm/6 text-black">{user.name}</div>
+                                    </ComboboxOption>
+                                ))}
+                            </ComboboxOptions>
+                        </Combobox>
+                    </Field>
+                    <Field disabled={isLoad} className='flex flex-col items-center text-center space-y-1'>
+                        <Label className="text-sm/6 font-medium text-black">Developer Lead</Label>
+                        <Combobox value={selectedDevLead} onChange={(value) => setSelectedDevLead(value)} onClose={() => setQueryLead('')}>
+                            <div className="relative">
+                                <ComboboxInput
+                                    className={clsx(
+                                        'w-full rounded-lg border-1 bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-black',
+                                        'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-black/25'
+                                    )}
+                                    displayValue={(user: Users | null) => user?.name || ''}
+                                    onChange={(e)=>{
+                                        setQueryLead(e.target.value)
+                                    }}
+                                />
+                                <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
+                                    <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
+                                </ComboboxButton>
+                            </div>
+
+                            <ComboboxOptions
+                                anchor="bottom"
+                                transition
+                                className={clsx(
+                                    'w-(--input-width) rounded-xl border-1 bg-white z-50 p-1 [--anchor-gap:--spacing(1)] empty:invisible',
+                                    'transition duration-100 ease-in data-leave:data-closed:opacity-0'
+                                )}
+                            >
+                                {filteredLead.map((user) => (
+                                    <ComboboxOption
+                                        key={user._id}
+                                        value={user}
+                                        className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
+                                    >
+                                        <CheckIcon className="invisible size-4 fill-white group-data-selected:visible" />
+                                        <div className="text-sm/6 text-black">{user.name}</div>
+                                    </ComboboxOption>
+                                ))}
+                            </ComboboxOptions>
+                        </Combobox>
                     </Field>
                 </div>
-                <Field>
+                <Field disabled={isLoad}>
                     <Label className="text-sm/6 font-medium text-black relative">Member
                         <div onClick={toggleMemberDialog} className="cursor-pointer rounded-full absolute -top-0.5 -right-6">
                             <div className="z-10 bg-green-200 hover:bg-green-500 text-green-700 text-[12px] px-2 py-1 rounded-full flex items-center justify-center w-5 h-5 select-none opacity-50 hover:opacity-100 transition-all duration-200 ease-in-out">
