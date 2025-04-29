@@ -35,4 +35,5 @@ export type Project = {
 export type Status = {
   readonly _id: string;
   title: string;
+  index: number;
 };
