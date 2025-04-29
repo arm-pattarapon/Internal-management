@@ -21,6 +21,14 @@ export async function deleteStatus(id:string) {
     axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/project-status/${id}`)
 }
 
+export async function deleteProjectById(_id:string) {
+    axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/projects/delete`, {
+        data: { ids: [_id] },
+        headers: { "Content-Type": "application/json" }
+    })
+    
+}
+
 export async function createStatus(title:string) {
     const newStatus = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/project-status`,
         {title},
@@ -41,6 +49,13 @@ export async function updateStatus(_id:string, title:string) {
 export async function updateProjectStatus(_id:string, statusId: string) {
     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/projects/update`,
         [{_id,statusId}],
+        {headers: { "Content-Type": "application/json" }}
+    )
+}
+
+export async function updateProject(project:any) {
+    axios.put(`${process.env.NEXT_PUBLIC_API_URL}/projects/update`,
+        [project],
         {headers: { "Content-Type": "application/json" }}
     )
 }

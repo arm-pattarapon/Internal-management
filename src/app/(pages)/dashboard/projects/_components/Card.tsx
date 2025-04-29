@@ -104,7 +104,10 @@ export default function Card({
           </div>
           {mouseIsOver && (
             <div
-              onClick={() => deleteProject(project._id)}
+              onClick={(e) => {
+                e.stopPropagation()
+                deleteProject(project._id)
+              }}
               className="cursor-pointer opacity-50 hover:opacity-100 transition-all duration-200 ease-in-out"
             >
               <svg

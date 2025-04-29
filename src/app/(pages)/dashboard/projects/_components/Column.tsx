@@ -4,20 +4,17 @@
 
 import {
   SortableContext,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Project, Status } from "../type";
 import Card from "./Card";
 import { useMemo, useState } from "react";
-import { CSS } from "@dnd-kit/utilities";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { useDroppable } from "@dnd-kit/core";
 
 interface Column {
   _id: string;
   title: string;
   deleteProject: (id: string) => void;
-  deleteColumn: (id: string) => void;
   setStatus: (id: string, status: string) => void;
   setActiveProject: (project: Project) => void;
   toggleMemberDialog: () => void;
@@ -29,7 +26,6 @@ interface Column {
 export default function Column({
   projects,
   deleteProject,
-  deleteColumn,
   setStatus,
   setActiveProject,
   toggleMemberDialog,
@@ -40,51 +36,24 @@ export default function Column({
   const projectIds = useMemo(() => {
     return projects.map((project) => project._id);
   }, [projects]);
+
   const [mouseIsOver, setMouseIsOver] = useState(false);
 
-  const [isEditStatusDialogOpen, setIsEditStatusDialogOpen] = useState(false);
 
   const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+    setNodeRef
+  } = useDroppable({
     id: column._id,
     data: {
       type: "Column",
       column,
     },
-    disabled: isEditStatusDialogOpen,
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  function toggleNewStatusDialog() {
-    setIsEditStatusDialogOpen(!isEditStatusDialogOpen);
-  }
-
-  if (isDragging) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="flex flex-col w-full h-full min-h-[100px] rounded border-2 border-blue-500 bg-[#F0F6FF] min-w-80 max-w-80"
-      ></div>
-    );
-  }
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
       onMouseEnter={() => setMouseIsOver(true)}
       onMouseLeave={() => setMouseIsOver(false)}
       className="bg-white rounded-sm shadow-lg w-full flex flex-col border-1 border-gray-300 min-w-80 max-w-80"
@@ -93,7 +62,7 @@ export default function Column({
         <div className="text-md text-left truncate select-none">
           {column.title}
         </div>
-        {mouseIsOver && (
+        {/* {mouseIsOver && (
           <Menu as="div" className="relative">
             <MenuButton>
               <svg
@@ -131,7 +100,7 @@ export default function Column({
               </MenuItem>
             </MenuItems>
           </Menu>
-        )}
+        )} */}
       </div>
       <div className="flex flex-col flex-grow space-y-3 p-3 overflow-y-auto max-h-100">
         {/* Card */}
