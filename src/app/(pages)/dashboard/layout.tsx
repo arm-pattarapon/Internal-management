@@ -22,6 +22,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Spinner from "@/app/component/spiner";
+import axios from "axios";
+import { IconType } from "react-icons/lib";
+
+interface navigation{
+  name:string,
+  href:string,
+  icon: IconType,
+  curent: boolean
+}
 
 export default function DashboardLayout({
   children,
@@ -33,52 +42,43 @@ export default function DashboardLayout({
 
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-
-  useEffect(() => {
-    const accessToken = Cookies.get("accessToken");
-    if (!accessToken) {
-      router.push("/");
-    } else {
-      setUsername(Cookies.get("username") || "");
-      setEmail(Cookies.get("email") || "");
-    }
-  }, [pathname]);
-
   const [isPending, startTransition] = useTransition();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const navigation = [
+  
+  const navigationList = [
     {
       name: "Dashboard",
       href: "/dashboard",
       icon: LuChartPie,
-      curent: pathname === "/dashboard",
+      curent: false,
     },
     {
       name: "Users",
       href: "/dashboard/users",
       icon: LuCircleUserRound,
-      curent: pathname.includes("/dashboard/users"),
+      curent: false,
     },
     {
       name: "Projects",
       href: "/dashboard/projects",
       icon: LuLayers3,
-      curent: pathname.includes("/dashboard/projects"),
+      curent: false,
     },
     {
       name: "Time Sheet",
       href: "/dashboard/timesheet",
       icon: LuFileClock,
-      curent: pathname.includes("/dashboard/timesheet"),
+      curent: false,
     },
     {
       name: "Settings",
       href: "/dashboard/settings",
       icon: LuCog,
-      curent: pathname.includes("/dashboard/settings"),
+      curent: false,
     },
   ];
+
+  const [navigation , setNavigation] = useState<navigation[]>(navigationList)
 
   const Notification = [
     {
@@ -100,6 +100,59 @@ export default function DashboardLayout({
     router.push("/");
   };
 
+  useEffect(() => {
+    const accessToken = Cookies.get("accessToken");
+    startTransition(async () => {
+      if (!accessToken) return router.push("/");
+      
+      const email = Cookies.get("email")
+
+      setUsername(Cookies.get("username") || "");
+      setEmail(email || "");
+      
+      const profileRes = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/user/profile`,
+        { email: email },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const { data } = profileRes;
+      const user = data;
+      
+      if(user.isAdmin){
+        setNavigation(prevNavigation => {
+          if (!prevNavigation.some(nav => nav.name === "Admin Setting")) {
+            return [
+              ...prevNavigation,
+              {
+          name: "Admin Setting",
+          href: "/dashboard/admin",
+          icon: LuCog,
+          curent: pathname.includes("/dashboard/admin"),
+              },
+            ];
+          }
+          return prevNavigation;
+        });
+      }
+
+      setNavigation(navigations =>
+        navigations.map(navigation => {
+          if (navigation.href === "/dashboard") 
+            return { ...navigation, curent: pathname===navigation.href };
+         
+          return { ...navigation, curent: pathname.includes(navigation.href) };
+
+        })
+      );
+    });
+  }, [pathname]);
+
   return (
     <div className="h-screen flex">
       {/* Sidebar */}
@@ -119,9 +172,9 @@ export default function DashboardLayout({
 
             {/* Menu */}
             <nav className="flex flex-col space-y-1.5">
-              {navigation.map((item) => (
+              {navigation.map((item, index) => (
                 <div
-                  key={item.name}
+                  key={index}
                   onClick={(e) => e.stopPropagation()} // ป้องกันปิด sidebar ตอนกดเมนู
                 >
                   <Link
