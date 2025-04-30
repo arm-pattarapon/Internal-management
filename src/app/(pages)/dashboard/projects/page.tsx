@@ -290,11 +290,6 @@ export default function projectsPage() {
         isOpen={isMemberDialogOpen}
         toggleMemberDialog={toggleMemberDialog}
       />
-      <StatusDialog
-        isDialogOpen={isStatusDialogOpen}
-        setColumns={setColumns}
-        toggleStatusDialog={toggleStatusDialog}
-      />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { Status } from '../type';
 
 interface props {
     isDialogOpen: boolean;
-    setColumns: React.Dispatch<React.SetStateAction<Status[]>>;
     toggleStatusDialog: () => void;
 }
 
@@ -15,7 +14,7 @@ type Inputs = {
     status: string
 }
 
-function StatusDialog({ isDialogOpen, setColumns , toggleStatusDialog }: props) {    
+function StatusDialog({ isDialogOpen , toggleStatusDialog }: props) {    
     const {
         register,
         handleSubmit,
@@ -24,17 +23,6 @@ function StatusDialog({ isDialogOpen, setColumns , toggleStatusDialog }: props) 
     } = useForm<Inputs>();
 
     const submitStatus: SubmitHandler<Inputs> = async ({status}) => {
-        const newStatus = await createStatus(status);
-        if(!newStatus) return;
-        const {data} = newStatus;
-
-        setColumns((column) => {
-        const newColumn = {
-            _id: data._id,
-            title: status,
-        }
-        return [...column, newColumn]
-        })
     
         closeDialog()
     }
